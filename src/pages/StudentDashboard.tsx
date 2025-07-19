@@ -109,7 +109,7 @@ const StudentDashboard = () => {
     };
 
     const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    const today = new Date('2025-07-19T20:50:00+05:30'); // Current date and time: 08:50 PM IST
+    const today = new Date('2025-07-19T20:57:00+05:30'); // Updated to current date and time: 08:57 PM IST
     const startOfWeek = new Date(today);
     startOfWeek.setDate(today.getDate() - today.getDay() + currentWeekOffset * 7);
     const weekDays = Array.from({ length: 28 }, (_, i) => {
@@ -127,13 +127,6 @@ const StudentDashboard = () => {
             })
         };
     }).slice(0, 28); // 4 weeks (28 days)
-
-    const timeSlots = Array.from({ length: 10 }, (_, i) => {
-        const hour = 9 + Math.floor(i / 2);
-        const minute = i % 2 === 0 ? '00' : '30';
-        const period = hour >= 12 ? 'pm' : 'am';
-        return `${hour % 12 || 12}:${minute} ${period}`;
-    });
 
     const handlePreviousWeek = () => setCurrentWeekOffset(offset => Math.max(offset - 1, -1));
     const handleNextWeek = () => setCurrentWeekOffset(offset => Math.min(offset + 1, 2));
@@ -183,31 +176,26 @@ const StudentDashboard = () => {
                             <CardContent>
                                 <div className="flex justify-between items-center mb-4">
                                     <Button onClick={handlePreviousWeek} disabled={currentWeekOffset === -1}>Previous</Button>
-                                    <span>Week {currentWeekOffset + 1}</span>
+                                    <span>Week {currentWeekOffset + 1} of 4</span>
                                     <Button onClick={handleNextWeek} disabled={currentWeekOffset === 2}>Next</Button>
                                 </div>
-                                <div className="grid grid-cols-[auto,repeat(7,1fr)] gap-2 text-center">
-                                    <div></div>
+                                <div className="grid grid-cols-[repeat(7,1fr)] gap-2 text-center">
                                     {days.map(day => (
                                         <div key={day} className="font-semibold text-muted-foreground">
                                             {day.slice(0, 3)}
                                         </div>
                                     ))}
                                 </div>
-                                <div className="grid grid-cols-[auto,repeat(7,1fr)] gap-2 mt-2">
-                                    {timeSlots.map(time => (
-                                        <React.Fragment key={time}>
-                                            <div className="text-sm font-medium">{time}</div>
-                                            {weekDays.slice(currentWeekOffset * 7, (currentWeekOffset + 1) * 7).map((day, index) => (
-                                                <div key={index} className={`border rounded-lg p-1 h-16 overflow-y-auto ${day.isPast ? 'bg-gray-200' : 'bg-card'}`}>
-                                                    {day.interviews.map((interview, i) => (
-                                                        <div key={i} className={`p-1 mt-1 text-xs rounded ${getStatusColor(interview.status)}`}>
-                                                            {interview.company}
-                                                        </div>
-                                                    ))}
+                                <div className="grid grid-cols-[repeat(7,1fr)] gap-2 mt-2">
+                                    {weekDays.slice(currentWeekOffset * 7, (currentWeekOffset + 1) * 7).map((day, index) => (
+                                        <div key={index} className={`border rounded-lg p-2 h-24 overflow-y-auto ${day.isPast ? 'bg-gray-200' : 'bg-card'}`}>
+                                            <div className="text-sm font-medium">{day.date} {day.month}</div>
+                                            {day.interviews.map((interview, i) => (
+                                                <div key={i} className={`p-1 mt-1 text-xs rounded ${getStatusColor(interview.status)}`}>
+                                                    {interview.company}
                                                 </div>
                                             ))}
-                                        </React.Fragment>
+                                        </div>
                                     ))}
                                 </div>
                             </CardContent>
