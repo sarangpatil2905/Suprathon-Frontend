@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { StatsCard } from "@/components/StatsCard";
 import { useEffect, useState } from "react";
 import { useUser } from "../context/UserContext";
+import AdminNavbar from "@/components/AdminNavbar";
 import axios from "axios";
 import {
     User,
@@ -118,29 +119,38 @@ const Admin: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-primary/5">
+
+            <div
+                className="fixed w-72 h-72 opacity-40 blur-3xl rounded-full top-0 left-1/2 z-[-1]"
+                style={{
+                    background: "radial-gradient(circle at center, hsl(98, 67%, 68%) 0%, transparent 70%)",
+                }}
+            />
+            <div
+                className="fixed w-64 h-64 opacity-40 blur-2xl rounded-full bottom-0 left-6 z-[-1]"
+                style={{
+                    background: "radial-gradient(circle, hsl(98, 67%, 78%) 0%, transparent 80%)",
+                }}
+            />
+            <div
+                className="fixed w-64 h-64 opacity-40 blur-2xl rounded-full top-1/3 left-1/4 z-[-1]"
+                style={{
+                    background: "radial-gradient(circle, hsl(98, 67%, 73%) 0%, transparent 80%)",
+                }}
+            />
+            <div
+                className="fixed w-80 h-80 opacity-40 blur-3xl rounded-full bottom-1/4 right-20 z-[-1]"
+                style={{
+                    background: "radial-gradient(circle at center, hsl(98, 67%, 70%) 0%, transparent 75%)",
+                }}
+            />
+            <AdminNavbar />
             <div className="p-6 space-y-6">
                 {/* Header */}
-                <div className="flex flex-col space-y-4">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
-                                TPO Dashboard
-                            </h1>
-                            <p className="text-muted-foreground">Overview of placement statistics</p>
-                        </div>
-                        <div className="flex gap-3">
-                            {/* <Button
-                onClick={handleLogout}
-                className="bg-gradient-to-r from-primary to-primary-glow hover:opacity-90 shadow-lg"
-              >
-                Logout
-              </Button> */}
-                        </div>
-                    </div>
-                </div>
+
 
                 {/* Profile Card */}
-                <Card className="bg-gradient-to-r from-card to-card/80 border-0 shadow-[var(--shadow-card)]">
+                <Card className="bg-white/40 border-border/80 shadow-[var(--shadow-card)]">
                     <CardContent className="p-6">
                         <div className="flex items-center gap-6">
                             <div className="w-16 h-16 bg-gradient-to-br from-primary/10 to-primary/5 rounded-full flex items-center justify-center">
@@ -166,13 +176,14 @@ const Admin: React.FC = () => {
                         icon={User}
                         trend={stats.totalStudents > 0 ? `+${stats.totalStudents}` : "0"}
                         className="col-span-1"
+
                     />
                     <StatsCard
                         title="Total Placements"
                         value={stats.totalPlacements.toString()}
                         icon={FileText}
                         trend={stats.totalPlacements > 0 ? `+${stats.totalPlacements}` : "0"}
-                        className="col-span-1"
+                        className="col-span-1 "
                     />
                     <StatsCard
                         title="Students Placed"
@@ -191,10 +202,10 @@ const Admin: React.FC = () => {
                 </div>
 
                 {/* Main Content */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6  ">
                     {/* CTC Statistics */}
                     <div className="lg:col-span-2">
-                        <Card className="bg-gradient-to-br from-card to-card/80 border-0 shadow-[var(--shadow-card)]">
+                        <Card className="bg-white/40 border-border/80 shadow-[var(--shadow-card)]">
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2">
                                     <IndianRupee className="w-5 h-5 text-primary" />
@@ -223,7 +234,7 @@ const Admin: React.FC = () => {
 
                     {/* Placements by Year */}
                     <div>
-                        <Card className="bg-gradient-to-br from-card to-card/80 border-0 shadow-[var(--shadow-card)]">
+                        <Card className="bg-white/40 border-border/80 shadow-[var(--shadow-card)]">
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2 text-lg">
                                     <TrendingUp className="w-5 h-5 text-primary" />
@@ -253,7 +264,7 @@ const Admin: React.FC = () => {
 
                     {/* Package Components */}
                     <div className="lg:col-span-2">
-                        <Card className="bg-gradient-to-br from-card to-card/80 border-0 shadow-[var(--shadow-card)]">
+                        <Card className="bg-white/40 border-border/80 shadow-[var(--shadow-card)]">
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2">
                                     <IndianRupee className="w-5 h-5 text-primary" />
@@ -265,7 +276,7 @@ const Admin: React.FC = () => {
                                 {Object.entries(stats.packageComponents).map(([component, data]) => (
                                     <div
                                         key={component}
-                                        className="p-4 bg-muted/30 rounded-lg border border-border/50"
+                                        className="p-4 bg-muted/20 rounded-lg border border-border/80"
                                     >
                                         <h4 className="font-medium capitalize">{component}</h4>
                                         <div className="grid grid-cols-2 gap-2 text-sm">
@@ -283,7 +294,7 @@ const Admin: React.FC = () => {
 
                     {/* Top Companies and Top CTC Offers */}
                     <div>
-                        <Card className="bg-gradient-to-br from-card to-card/80 border-0 shadow-[var(--shadow-card)]">
+                        <Card className="bg-white/20 border-0 shadow-[var(--shadow-card)]">
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2 text-lg">
                                     <Building2 className="w-5 h-5 text-primary" />
@@ -296,7 +307,7 @@ const Admin: React.FC = () => {
                                     {stats.topCompanies.map((company) => (
                                         <div
                                             key={company.companyId}
-                                            className="p-4 hover:bg-muted/30 transition-colors"
+                                            className="p-4 hover:bg-muted/20 transition-colors"
                                         >
                                             <div className="flex items-center justify-between">
                                                 <h4 className="font-medium text-sm">{company.name}</h4>
@@ -312,7 +323,7 @@ const Admin: React.FC = () => {
                     </div>
 
                     <div className="lg:col-span-3">
-                        <Card className="bg-gradient-to-br from-card to-card/80 border-0 shadow-[var(--shadow-card)]">
+                        <Card className="bg-white/40 border-border/80 shadow-[var(--shadow-card)]">
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2">
                                     <Award className="w-5 h-5 text-primary" />
@@ -324,7 +335,7 @@ const Admin: React.FC = () => {
                                 {stats.topCTCOffers.map((offer) => (
                                     <div
                                         key={offer._id}
-                                        className="p-4 bg-muted/30 rounded-lg border border-border/50"
+                                        className="p-4 bg-muted/20 rounded-lg border border-border/50"
                                     >
                                         <div className="flex items-center justify-between mb-3">
                                             <div>

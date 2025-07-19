@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import AdminNavbar from "@/components/AdminNavbar";
 import { useEffect, useState } from "react";
 import {
     Building2,
@@ -50,7 +51,7 @@ interface Company {
     schedule: ScheduleEvent[];
     package: PackageComponent[];
     file?: string;
-    deadline: string | Date; // Allow string or Date for flexibility
+    deadline: string | Date;
 }
 
 const AdminCompanies = () => {
@@ -75,7 +76,7 @@ const AdminCompanies = () => {
     const [addMessage, setAddMessage] = useState<{ text: string; isError: boolean }>({ text: "", isError: false });
     const [expandedSchedule, setExpandedSchedule] = useState<number[]>([]);
     const [expandedPackage, setExpandedPackage] = useState<number[]>([]);
-    const [packageModalStates, setPackageModalStates] = useState<{ [key: string]: boolean }>({}); // Track modal state per company
+    const [packageModalStates, setPackageModalStates] = useState<{ [key: string]: boolean }>({});
 
     const fetchCompanies = async () => {
         setLoading(true);
@@ -86,7 +87,7 @@ const AdminCompanies = () => {
             });
             const companies = response.data.data.companies || [];
             const sortedCompanies = [...companies].sort((a, b) => {
-                const now = new Date("2025-07-19T16:27:00Z"); // 09:57 PM IST
+                const now = new Date("2025-07-19T16:27:00Z");
                 const deadlineA = new Date(a.deadline);
                 const deadlineB = new Date(b.deadline);
                 const isExpiredA = isNaN(deadlineA.getTime()) ? false : deadlineA < now;
@@ -116,7 +117,7 @@ const AdminCompanies = () => {
             name: company.name,
             year: company.year.toString(),
             eligibilityCgpa: company.eligibilityCgpa.toString(),
-            phone: company.phone || "", // Ensure phone is a string
+            phone: company.phone || "",
             schedule: company.schedule.map((s) => ({
                 eventName: s.eventName,
                 date: s.date.includes('T') ? s.date : s.date + 'T10:00',
@@ -143,7 +144,7 @@ const AdminCompanies = () => {
                 name: updateForm.name.trim(),
                 year: parseInt(updateForm.year),
                 eligibilityCgpa: parseFloat(updateForm.eligibilityCgpa),
-                phone: updateForm.phone.trim(), // Ensure trim works on string
+                phone: updateForm.phone.trim(),
                 schedule: updateForm.schedule.map((s) => ({
                     eventName: s.eventName.trim(),
                     date: s.date,
@@ -187,7 +188,7 @@ const AdminCompanies = () => {
 
         try {
             const response = await axios.post(
-                "http://localhost:8000/company/add-company", // Corrected endpoint
+                "http://localhost:8000/company/add-company",
                 formData,
                 {
                     withCredentials: true,
@@ -280,7 +281,7 @@ const AdminCompanies = () => {
 
     const isCompleted = (deadline: string | Date) => {
         const date = new Date(deadline);
-        return isNaN(date.getTime()) ? false : date > new Date(); // 09:57 PM IST
+        return isNaN(date.getTime()) ? false : date > new Date();
     };
 
     const formatCurrency = (amount: number) => {
@@ -302,20 +303,61 @@ const AdminCompanies = () => {
         });
     };
 
+    const getStatusColor = (status: string) => {
+        switch (status) {
+            case 'confirmed':
+            case 'shortlisted':
+                return 'bg-[#e6f3e1] text-[#2f7d32] border-[#c8e6c9]';
+            case 'pending':
+            case 'under_review':
+                return 'bg-[#fff8e1] text-[#f57f17] border-[#ffe0b2]';
+            case 'rejected':
+                return 'bg-[#ffebee] text-[#d32f2f] border-[#ffcdd2]';
+            default:
+                return 'bg-[#f5f5f5] text-[#616161] border-[#e0e0e0]';
+        }
+    };
+
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50">
+        <div className="min-h-screen bg-transparent text-gray-200 relative overflow-hidden">
+            {/* Background Blobs */}
+            <div
+                className="absolute w-72 h-72 opacity-50 blur-3xl rounded-full top-0 left-1/2 z-[-1]"
+                style={{
+                    background: "radial-gradient(circle at center, hsl(98, 67%, 68%) 0%, transparent 70%)",
+                }}
+            />
+            <div
+                className="absolute w-64 h-64 opacity-50 blur-2xl rounded-full bottom-0 left-6 z-[-1]"
+                style={{
+                    background: "radial-gradient(circle, hsl(98, 67%, 78%) 0%, transparent 80%)",
+                }}
+            />
+            <div
+                className="absolute w-64 h-64 opacity-50 blur-2xl rounded-full top-1/3 left-1/4 z-[-1]"
+                style={{
+                    background: "radial-gradient(circle, hsl(98, 67%, 73%) 0%, transparent 80%)",
+                }}
+            />
+            <div
+                className="absolute w-80 h-80 opacity-50 blur-3xl rounded-full bottom-1/4 right-20 z-[-1]"
+                style={{
+                    background: "radial-gradient(circle at center, hsl(98, 67%, 70%) 0%, transparent 75%)",
+                }}
+            />
+            <AdminNavbar />
             <div className="p-6 space-y-8">
                 {/* Header */}
                 <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                     <div>
-                        <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                        <h1 className="text-3xl font-bold text-[#252525]">
                             Manage Companies
                         </h1>
-                        <p className="text-slate-600 mt-1">View, add, and update company details</p>
+                        <p className="text-[#616161] mt-1">View, add, and update company details</p>
                     </div>
                     <Button
                         onClick={() => setAddModalOpen(true)}
-                        className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg w-full md:w-auto"
+                        className="bg-[#9FE477] hover:bg-[#7AC142] text-[#252525] shadow-lg w-full md:w-auto"
                     >
                         <Plus className="w-5 h-5 mr-2" /> Add Company
                     </Button>
@@ -323,7 +365,7 @@ const AdminCompanies = () => {
 
                 {/* Error or Loading Message */}
                 {(error || loading) && (
-                    <div className="bg-red-50 text-red-700 p-4 rounded-lg flex items-center gap-2">
+                    <div className={`p-4 rounded-lg flex items-center gap-2 ${error ? 'bg-[#ffebee] text-[#d32f2f] border-[#ffcdd2]' : 'bg-[#e6f3e1] text-[#2f7d32] border-[#c8e6c9]'}`}>
                         {loading ? (
                             <>
                                 <Loader2 className="w-5 h-5 animate-spin" />
@@ -340,29 +382,29 @@ const AdminCompanies = () => {
                     {companies.map((company) => (
                         <Card
                             key={company._id}
-                            className={`border-0 shadow-lg transition-all duration-300 hover:shadow-xl bg-gradient-to-br from-white to-blue-50/30 hover:from-blue-50/50 hover:to-indigo-50/50"`}
+                            className="border-border/80 shadow-lg transition-all duration-300 hover:shadow-xl bg-[#FAFAFA]"
                         >
                             <CardHeader className="p-6 pb-4">
-                                <CardTitle className="flex items-center gap-3 text-xl text-slate-800">
-                                    <div className="p-2 bg-blue-100 rounded-lg">
-                                        <Building2 className="w-5 h-5 text-blue-600" />
+                                <CardTitle className="flex items-center gap-3 text-xl text-[#252525]">
+                                    <div className="p-2 bg-[#9FE477]/20 rounded-lg">
+                                        <Building2 className="w-5 h-5 text-[#9FE477]" />
                                     </div>
                                     {company.name}
                                 </CardTitle>
-                                <CardDescription className="text-slate-600">Company placement details</CardDescription>
+                                <CardDescription className="text-[#616161]">Company placement details</CardDescription>
                             </CardHeader>
                             <CardContent className="px-6 pb-6 space-y-4">
                                 <div className="grid grid-cols-2 gap-4">
-                                    <div className="flex items-center gap-2 text-sm text-slate-600">
-                                        <DollarSign className="w-4 h-4 text-green-600" />
+                                    <div className="flex items-center gap-2 text-sm text-[#616161]">
+                                        <DollarSign className="w-4 h-4 text-[#9FE477]" />
                                         <div className="flex items-center gap-1">
-                                            <p className="font-medium text-slate-800">CTC</p>
+                                            <p className="font-medium text-[#252525]">CTC</p>
                                             <p>{formatCurrency(company.package.reduce((acc, p) => acc + p.amount, 0))}</p>
                                             <Button
                                                 variant="ghost"
                                                 size="sm"
                                                 onClick={() => togglePackageModal(company._id)}
-                                                className="p-1 h-auto text-blue-600 hover:text-blue-800"
+                                                className="p-1 h-auto text-[#9FE477] hover:text-[#7AC142] hover:bg-[#9FE477]/10"
                                             >
                                                 <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -370,65 +412,64 @@ const AdminCompanies = () => {
                                             </Button>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-2 text-sm text-slate-600">
-                                        <GraduationCap className="w-4 h-4 text-blue-600" />
+                                    <div className="flex items-center gap-2 text-sm text-[#616161]">
+                                        <GraduationCap className="w-4 h-4 text-[#9FE477]" />
                                         <div>
-                                            <p className="font-medium text-slate-800">Min CGPA</p>
+                                            <p className="font-medium text-[#252525]">Min CGPA</p>
                                             <p>{company.eligibilityCgpa}</p>
                                         </div>
                                     </div>
                                 </div>
 
                                 <div className="space-y-2 text-sm">
-                                    <div className="flex items-center gap-2 text-slate-600">
-                                        <Mail className="w-4 h-4" />
+                                    <div className="flex items-center gap-2 text-[#616161]">
+                                        <Mail className="w-4 h-4 text-[#9FE477]" />
                                         <span className="truncate">{company.email}</span>
                                     </div>
-                                    <div className="flex items-center gap-2 text-slate-600">
-                                        <Phone className="w-4 h-4" />
+                                    <div className="flex items-center gap-2 text-[#616161]">
+                                        <Phone className="w-4 h-4 text-[#9FE477]" />
                                         <span>{company.phone}</span>
                                     </div>
-                                    <div className="flex items-center gap-2 text-slate-600">
-                                        <CalendarDays className="w-4 h-4" />
+                                    <div className="flex items-center gap-2 text-[#616161]">
+                                        <CalendarDays className="w-4 h-4 text-[#9FE477]" />
                                         <span>Year {company.year}</span>
                                     </div>
                                 </div>
 
-                                <div className="p-3 bg-slate-50 rounded-lg">
+                                <div className="p-3 bg-[#f5f5f5] rounded-lg">
                                     <div className="flex items-center justify-between mb-2">
-                                        <h4 className="text-sm font-semibold text-slate-800">Application Deadline</h4>
+                                        <h4 className="text-sm font-semibold text-[#252525]">Application Deadline</h4>
                                     </div>
-                                    <p className="text-sm text-slate-600 flex items-center gap-1">
-                                        <Clock className="w-3 h-3" />
+                                    <p className="text-sm text-[#616161] flex items-center gap-1">
+                                        <Clock className="w-3 h-3 text-[#9FE477]" />
                                         {formatDate(company.deadline)}
                                     </p>
                                 </div>
 
                                 <div>
-                                    <h4 className="text-sm font-semibold text-slate-800 mb-2">Upcoming Events</h4>
+                                    <h4 className="text-sm font-semibold text-[#252525] mb-2">Upcoming Events</h4>
                                     <div className="space-y-1 max-h-20 overflow-y-auto">
                                         {company.schedule.slice(0, 2).map((event) => (
-                                            <div key={event._id} className="text-xs p-2 bg-blue-50 rounded">
-                                                <p className="font-medium text-blue-800">{event.eventName}</p>
-                                                <p className="text-blue-600">{formatDate(event.date)}</p>
+                                            <div key={event._id} className="text-xs p-2 bg-[#9FE477]/10 rounded">
+                                                <p className="font-medium text-[#252525]">{event.eventName}</p>
+                                                <p className="text-[#616161]">{formatDate(event.date)}</p>
                                             </div>
                                         ))}
                                         {company.schedule.length > 2 && (
-                                            <p className="text-xs text-slate-500">+{company.schedule.length - 2} more events</p>
+                                            <p className="text-xs text-[#757575]">+{company.schedule.length - 2} more events</p>
                                         )}
                                     </div>
                                 </div>
 
                                 <Button
                                     onClick={() => handleUpdateClick(company)}
-                                    className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                                    className="w-full bg-[#252525] hover:bg-[#9FE477]/80 text-[#f3f3f3] hover:text-[#252525]"
                                 >
                                     <Edit className="w-4 h-4 mr-2" /> Edit Company
                                 </Button>
                                 <Button
-                                    // disabled={isCompleted(company.schedule[company.schedule.length - 1].date)}
                                     onClick={() => { navigate(`/accept-admin/${company._id}`) }}
-                                    className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                                    className={`w-full ${isCompleted(company.schedule[company.schedule.length - 1].date) ? 'bg-[#9FE477] hover:bg-[#7AC142] text-[#252525]' : 'bg-[#252525] hover:bg-[#9FE477]/80 text-[#f3f3f3] hover:text-[#252525]'}`}
                                 >
                                     <Check className="w-4 h-4 mr-2" /> {isCompleted(company.schedule[company.schedule.length - 1].date) ? "Ongoing" : "Finalize Students"}
                                 </Button>
@@ -437,19 +478,19 @@ const AdminCompanies = () => {
                             {/* Package Split Modal */}
                             {packageModalStates[company._id] && (
                                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                                    <Card className="bg-white border-0 w-full max-w-sm p-6 rounded-2xl shadow-2xl">
-                                        <CardHeader className="p-4 pb-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
-                                            <CardTitle className="flex items-center gap-2 text-lg">
-                                                <DollarSign className="w-5 h-5" />
+                                    <Card className="bg-[#FAFAFA] border-0 w-full max-w-sm p-6 rounded-2xl shadow-2xl">
+                                        <CardHeader className="p-4 pb-3 bg-[#9FE477]/20">
+                                            <CardTitle className="flex items-center gap-2 text-lg text-[#252525]">
+                                                <DollarSign className="w-5 h-5 text-[#9FE477]" />
                                                 Package Split for {company.name}
                                             </CardTitle>
-                                            <CardDescription className="text-blue-100">
+                                            <CardDescription className="text-[#616161]">
                                                 Breakdown of compensation components
                                             </CardDescription>
                                         </CardHeader>
                                         <CardContent className="p-4 space-y-3">
                                             {company.package.map((pkg, index) => (
-                                                <div key={index} className="flex justify-between text-sm text-slate-700">
+                                                <div key={index} className="flex justify-between text-sm text-[#616161]">
                                                     <span>{pkg.componentName}</span>
                                                     <span>{formatCurrency(pkg.amount)}</span>
                                                 </div>
@@ -458,7 +499,7 @@ const AdminCompanies = () => {
                                                 <Button
                                                     variant="outline"
                                                     onClick={() => togglePackageModal(company._id)}
-                                                    className="w-full md:w-auto"
+                                                    className="w-full md:w-auto border-[#e0e0e0] text-[#616161] hover:bg-[#f5f5f5]"
                                                 >
                                                     Close
                                                 </Button>
@@ -474,25 +515,25 @@ const AdminCompanies = () => {
                 {/* Update Company Modal */}
                 {updateModalOpen && selectedCompany && (
                     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                        <Card className="bg-white border-0 w-full max-w-4xl max-h-[90vh] overflow-hidden shadow-2xl rounded-2xl">
-                            <CardHeader className="p-6 pb-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
-                                <CardTitle className="flex items-center gap-3 text-2xl">
-                                    <Edit className="w-6 h-6" />
+                        <Card className="bg-[#FAFAFA] border-0 w-full max-w-4xl max-h-[90vh] overflow-hidden shadow-2xl rounded-2xl">
+                            <CardHeader className="p-6 pb-4 bg-[#9FE477]/20">
+                                <CardTitle className="flex items-center gap-3 text-2xl text-[#252525]">
+                                    <Edit className="w-6 h-6 text-[#9FE477]" />
                                     Update {selectedCompany.name}
                                 </CardTitle>
-                                <CardDescription className="text-blue-100">
+                                <CardDescription className="text-[#616161]">
                                     Modify company placement details
                                 </CardDescription>
                             </CardHeader>
 
-                            <div className="flex border-b bg-slate-50">
+                            <div className="flex border-b bg-[#f5f5f5]">
                                 {(['basic', 'schedule', 'package'] as const).map((section) => (
                                     <button
                                         key={section}
                                         onClick={() => setActiveSection(section)}
                                         className={`flex-1 px-6 py-3 text-sm font-medium transition-colors ${activeSection === section
-                                            ? 'text-blue-600 border-b-2 border-blue-600 bg-white'
-                                            : 'text-slate-600 hover:text-slate-800'
+                                            ? 'text-[#9FE477] border-b-2 border-[#9FE477] bg-[#FAFAFA]'
+                                            : 'text-[#616161] hover:text-[#252525]'
                                             }`}
                                     >
                                         {section === 'basic' && 'Basic Info'}
@@ -507,18 +548,18 @@ const AdminCompanies = () => {
                                     {activeSection === 'basic' && (
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                             <div className="space-y-2">
-                                                <Label htmlFor="name" className="text-sm font-semibold text-slate-700">
+                                                <Label htmlFor="name" className="text-sm font-semibold text-[#252525]">
                                                     Company Name
                                                 </Label>
                                                 <Input
                                                     id="name"
                                                     value={updateForm.name}
                                                     onChange={(e) => setUpdateForm(prev => ({ ...prev, name: e.target.value }))}
-                                                    className="h-11"
+                                                    className="h-11 border-[#e0e0e0] focus:border-[#9FE477]"
                                                 />
                                             </div>
                                             <div className="space-y-2">
-                                                <Label htmlFor="year" className="text-sm font-semibold text-slate-700">
+                                                <Label htmlFor="year" className="text-sm font-semibold text-[#252525]">
                                                     Academic Year
                                                 </Label>
                                                 <Input
@@ -526,11 +567,11 @@ const AdminCompanies = () => {
                                                     type="number"
                                                     value={updateForm.year}
                                                     onChange={(e) => setUpdateForm(prev => ({ ...prev, year: e.target.value }))}
-                                                    className="h-11"
+                                                    className="h-11 border-[#e0e0e0] focus:border-[#9FE477]"
                                                 />
                                             </div>
                                             <div className="space-y-2">
-                                                <Label htmlFor="eligibilityCgpa" className="text-sm font-semibold text-slate-700">
+                                                <Label htmlFor="eligibilityCgpa" className="text-sm font-semibold text-[#252525]">
                                                     Minimum CGPA
                                                 </Label>
                                                 <Input
@@ -539,18 +580,18 @@ const AdminCompanies = () => {
                                                     step="0.1"
                                                     value={updateForm.eligibilityCgpa}
                                                     onChange={(e) => setUpdateForm(prev => ({ ...prev, eligibilityCgpa: e.target.value }))}
-                                                    className="h-11"
+                                                    className="h-11 border-[#e0e0e0] focus:border-[#9FE477]"
                                                 />
                                             </div>
                                             <div className="space-y-2">
-                                                <Label htmlFor="phone" className="text-sm font-semibold text-slate-700">
+                                                <Label htmlFor="phone" className="text-sm font-semibold text-[#252525]">
                                                     Contact Phone
                                                 </Label>
                                                 <Input
                                                     id="phone"
                                                     value={updateForm.phone}
                                                     onChange={(e) => setUpdateForm(prev => ({ ...prev, phone: e.target.value }))}
-                                                    className="h-11"
+                                                    className="h-11 border-[#e0e0e0] focus:border-[#9FE477]"
                                                 />
                                             </div>
                                         </div>
@@ -559,11 +600,11 @@ const AdminCompanies = () => {
                                     {activeSection === 'schedule' && (
                                         <div className="space-y-4">
                                             <div className="flex items-center justify-between">
-                                                <h3 className="text-lg font-semibold text-slate-800">Event Schedule</h3>
+                                                <h3 className="text-lg font-semibold text-[#252525]">Event Schedule</h3>
                                                 <Button
                                                     type="button"
                                                     onClick={addScheduleEvent}
-                                                    className="bg-green-600 hover:bg-green-700"
+                                                    className="bg-[#9FE477] hover:bg-[#7AC142] text-[#252525]"
                                                 >
                                                     <Plus className="w-4 h-4 mr-2" /> Add Event
                                                 </Button>
@@ -571,20 +612,20 @@ const AdminCompanies = () => {
 
                                             <div className="space-y-3">
                                                 {updateForm.schedule.map((event, index) => (
-                                                    <Card key={index} className="border border-slate-200">
+                                                    <Card key={index} className="border border-[#e0e0e0] bg-[#FAFAFA]">
                                                         <div
-                                                            className="p-4 cursor-pointer hover:bg-slate-50 transition-colors"
+                                                            className="p-4 cursor-pointer hover:bg-[#f5f5f5] transition-colors"
                                                             onClick={() => toggleScheduleExpansion(index)}
                                                         >
                                                             <div className="flex items-center justify-between">
                                                                 <div className="flex items-center gap-3">
-                                                                    <Calendar className="w-5 h-5 text-blue-600" />
+                                                                    <Calendar className="w-5 h-5 text-[#9FE477]" />
                                                                     <div>
-                                                                        <p className="font-medium text-slate-800">
+                                                                        <p className="font-medium text-[#252525]">
                                                                             {event.eventName || `Event ${index + 1}`}
                                                                         </p>
                                                                         {event.date && (
-                                                                            <p className="text-sm text-slate-600">
+                                                                            <p className="text-sm text-[#616161]">
                                                                                 {formatDate(event.date)}
                                                                             </p>
                                                                         )}
@@ -599,45 +640,45 @@ const AdminCompanies = () => {
                                                                             e.stopPropagation();
                                                                             removeScheduleEvent(index);
                                                                         }}
-                                                                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                                                        className="text-[#d32f2f] hover:text-[#b71c1c] hover:bg-[#ffebee]"
                                                                     >
                                                                         <Trash2 className="w-4 h-4" />
                                                                     </Button>
                                                                     {expandedSchedule.includes(index) ?
-                                                                        <ChevronUp className="w-5 h-5 text-slate-400" /> :
-                                                                        <ChevronDown className="w-5 h-5 text-slate-400" />
+                                                                        <ChevronUp className="w-5 h-5 text-[#616161]" /> :
+                                                                        <ChevronDown className="w-5 h-5 text-[#616161]" />
                                                                     }
                                                                 </div>
                                                             </div>
                                                         </div>
 
                                                         {expandedSchedule.includes(index) && (
-                                                            <div className="border-t border-slate-200 p-4 bg-slate-50 space-y-4">
+                                                            <div className="border-t border-[#e0e0e0] p-4 bg-[#f5f5f5] space-y-4">
                                                                 <div>
-                                                                    <Label className="text-sm font-medium text-slate-700">Event Name</Label>
+                                                                    <Label className="text-sm font-medium text-[#252525]">Event Name</Label>
                                                                     <Input
                                                                         placeholder="e.g., Pre-placement Talk"
                                                                         value={event.eventName}
                                                                         onChange={(e) => updateScheduleEvent(index, "eventName", e.target.value)}
-                                                                        className="mt-1"
+                                                                        className="mt-1 border-[#e0e0e0] focus:border-[#9FE477]"
                                                                     />
                                                                 </div>
                                                                 <div>
-                                                                    <Label className="text-sm font-medium text-slate-700">Date & Time</Label>
+                                                                    <Label className="text-sm font-medium text-[#252525]">Date & Time</Label>
                                                                     <Input
                                                                         type="datetime-local"
                                                                         value={event.date}
                                                                         onChange={(e) => updateScheduleEvent(index, "date", e.target.value)}
-                                                                        className="mt-1"
+                                                                        className="mt-1 border-[#e0e0e0] focus:border-[#9FE477]"
                                                                     />
                                                                 </div>
                                                                 <div>
-                                                                    <Label className="text-sm font-medium text-slate-700">Description</Label>
+                                                                    <Label className="text-sm font-medium text-[#252525]">Description</Label>
                                                                     <Input
                                                                         placeholder="Optional description"
                                                                         value={event.description}
                                                                         onChange={(e) => updateScheduleEvent(index, "description", e.target.value)}
-                                                                        className="mt-1"
+                                                                        className="mt-1 border-[#e0e0e0] focus:border-[#9FE477]"
                                                                     />
                                                                 </div>
                                                             </div>
@@ -652,15 +693,15 @@ const AdminCompanies = () => {
                                         <div className="space-y-4">
                                             <div className="flex items-center justify-between">
                                                 <div>
-                                                    <h3 className="text-lg font-semibold text-slate-800">Compensation Package</h3>
-                                                    <p className="text-sm text-slate-600">Total: {formatCurrency(
+                                                    <h3 className="text-lg font-semibold text-[#252525]">Compensation Package</h3>
+                                                    <p className="text-sm text-[#616161]">Total: {formatCurrency(
                                                         updateForm.package.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0)
                                                     )}</p>
                                                 </div>
                                                 <Button
                                                     type="button"
                                                     onClick={addPackageComponent}
-                                                    className="bg-green-600 hover:bg-green-700"
+                                                    className="bg-[#9FE477] hover:bg-[#7AC142] text-[#252525]"
                                                 >
                                                     <Plus className="w-4 h-4 mr-2" /> Add Component
                                                 </Button>
@@ -668,19 +709,19 @@ const AdminCompanies = () => {
 
                                             <div className="space-y-3">
                                                 {updateForm.package.map((pkg, index) => (
-                                                    <Card key={index} className="border border-slate-200">
+                                                    <Card key={index} className="border border-[#e0e0e0] bg-[#FAFAFA]">
                                                         <div
-                                                            className="p-4 cursor-pointer hover:bg-slate-50 transition-colors"
+                                                            className="p-4 cursor-pointer hover:bg-[#f5f5f5] transition-colors"
                                                             onClick={() => togglePackageExpansion(index)}
                                                         >
                                                             <div className="flex items-center justify-between">
                                                                 <div className="flex items-center gap-3">
-                                                                    <DollarSign className="w-5 h-5 text-green-600" />
+                                                                    <DollarSign className="w-5 h-5 text-[#9FE477]" />
                                                                     <div>
-                                                                        <p className="font-medium text-slate-800">
+                                                                        <p className="font-medium text-[#252525]">
                                                                             {pkg.componentName || `Component ${index + 1}`}
                                                                         </p>
-                                                                        <p className="text-sm text-slate-600">
+                                                                        <p className="text-sm text-[#616161]">
                                                                             {formatCurrency(parseFloat(pkg.amount) || 0)}
                                                                         </p>
                                                                     </div>
@@ -694,37 +735,37 @@ const AdminCompanies = () => {
                                                                             e.stopPropagation();
                                                                             removePackageComponent(index);
                                                                         }}
-                                                                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                                                        className="text-[#d32f2f] hover:text-[#b71c1c] hover:bg-[#ffebee]"
                                                                     >
                                                                         <Trash2 className="w-4 h-4" />
                                                                     </Button>
                                                                     {expandedPackage.includes(index) ?
-                                                                        <ChevronUp className="w-5 h-5 text-slate-400" /> :
-                                                                        <ChevronDown className="w-5 h-5 text-slate-400" />
+                                                                        <ChevronUp className="w-5 h-5 text-[#616161]" /> :
+                                                                        <ChevronDown className="w-5 h-5 text-[#616161]" />
                                                                     }
                                                                 </div>
                                                             </div>
                                                         </div>
 
                                                         {expandedPackage.includes(index) && (
-                                                            <div className="border-t border-slate-200 p-4 bg-slate-50 space-y-4">
+                                                            <div className="border-t border-[#e0e0e0] p-4 bg-[#f5f5f5] space-y-4">
                                                                 <div>
-                                                                    <Label className="text-sm font-medium text-slate-700">Component Name</Label>
+                                                                    <Label className="text-sm font-medium text-[#252525]">Component Name</Label>
                                                                     <Input
                                                                         placeholder="e.g., Base Salary, Bonus, Stock Options"
                                                                         value={pkg.componentName}
                                                                         onChange={(e) => updatePackageComponent(index, "componentName", e.target.value)}
-                                                                        className="mt-1"
+                                                                        className="mt-1 border-[#e0e0e0] focus:border-[#9FE477]"
                                                                     />
                                                                 </div>
                                                                 <div>
-                                                                    <Label className="text-sm font-medium text-slate-700">Amount (₹)</Label>
+                                                                    <Label className="text-sm font-medium text-[#252525]">Amount (₹)</Label>
                                                                     <Input
                                                                         type="number"
                                                                         placeholder="Amount in INR"
                                                                         value={pkg.amount}
                                                                         onChange={(e) => updatePackageComponent(index, "amount", e.target.value)}
-                                                                        className="mt-1"
+                                                                        className="mt-1 border-[#e0e0e0] focus:border-[#9FE477]"
                                                                     />
                                                                 </div>
                                                             </div>
@@ -737,8 +778,8 @@ const AdminCompanies = () => {
 
                                     {updateMessage.text && (
                                         <div className={`p-3 rounded-lg flex items-center gap-2 ${updateMessage.isError
-                                            ? 'bg-red-50 text-red-700 border border-red-200'
-                                            : 'bg-green-50 text-green-700 border border-green-200'
+                                            ? 'bg-[#ffebee] text-[#d32f2f] border-[#ffcdd2]'
+                                            : 'bg-[#e6f3e1] text-[#2f7d32] border-[#c8e6c9]'
                                             }`}>
                                             {updateMessage.isError ? (
                                                 <X className="w-4 h-4" />
@@ -749,7 +790,7 @@ const AdminCompanies = () => {
                                         </div>
                                     )}
 
-                                    <div className="flex justify-end gap-4 pt-4 border-t">
+                                    <div className="flex justify-end gap-4 pt-4 border-t border-[#e0e0e0]">
                                         <Button
                                             type="button"
                                             variant="outline"
@@ -758,13 +799,13 @@ const AdminCompanies = () => {
                                                 setSelectedCompany(null);
                                                 setUpdateMessage({ text: "", isError: false });
                                             }}
-                                            className="w-full md:w-auto"
+                                            className="w-full md:w-auto border-[#e0e0e0] text-[#616161] hover:bg-[#f5f5f5]"
                                         >
                                             Cancel
                                         </Button>
                                         <Button
                                             type="submit"
-                                            className="w-full md:w-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                                            className="w-full md:w-auto bg-[#9FE477] hover:bg-[#7AC142] text-[#252525]"
                                         >
                                             <Save className="w-4 h-4 mr-2" />
                                             Save Changes
@@ -779,20 +820,20 @@ const AdminCompanies = () => {
                 {/* Add Company Modal */}
                 {addModalOpen && (
                     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                        <Card className="bg-white border-0 w-full max-w-md p-6 rounded-2xl shadow-2xl">
-                            <CardHeader className="p-4 pb-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
-                                <CardTitle className="flex items-center gap-3 text-xl">
-                                    <Plus className="w-5 h-5" />
+                        <Card className="bg-[#FAFAFA] border-0 w-full max-w-md p-6 rounded-2xl shadow-2xl">
+                            <CardHeader className="p-4 pb-3 bg-[#9FE477]/20">
+                                <CardTitle className="flex items-center gap-3 text-xl text-[#252525]">
+                                    <Plus className="w-5 h-5 text-[#9FE477]" />
                                     Add New Company
                                 </CardTitle>
-                                <CardDescription className="text-blue-100">
+                                <CardDescription className="text-[#616161]">
                                     Upload a PDF with company details
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="p-4 space-y-6">
                                 <form onSubmit={handleAddSubmit} className="space-y-4">
                                     <div>
-                                        <Label htmlFor="addFile" className="text-sm font-semibold text-slate-700">
+                                        <Label htmlFor="addFile" className="text-sm font-semibold text-[#252525]">
                                             Company PDF
                                         </Label>
                                         <Input
@@ -800,13 +841,13 @@ const AdminCompanies = () => {
                                             type="file"
                                             accept="application/pdf"
                                             onChange={(e) => setAddFile(e.target.files?.[0] || null)}
-                                            className="mt-1 h-11"
+                                            className="mt-1 h-11 border-[#e0e0e0] focus:border-[#9FE477]"
                                         />
                                     </div>
                                     {addMessage.text && (
                                         <div className={`p-2 rounded-lg flex items-center gap-2 ${addMessage.isError
-                                            ? 'bg-red-50 text-red-700 border border-red-200'
-                                            : 'bg-green-50 text-green-700 border border-green-200'
+                                            ? 'bg-[#ffebee] text-[#d32f2f] border-[#ffcdd2]'
+                                            : 'bg-[#e6f3e1] text-[#2f7d32] border-[#c8e6c9]'
                                             }`}>
                                             {addMessage.isError ? (
                                                 <X className="w-4 h-4" />
@@ -825,13 +866,13 @@ const AdminCompanies = () => {
                                                 setAddFile(null);
                                                 setAddMessage({ text: "", isError: false });
                                             }}
-                                            className="w-full md:w-auto"
+                                            className="w-full md:w-auto border-[#e0e0e0] text-[#616161] hover:bg-[#f5f5f5]"
                                         >
                                             Cancel
                                         </Button>
                                         <Button
                                             type="submit"
-                                            className="w-full md:w-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                                            className="w-full md:w-auto bg-[#9FE477] hover:bg-[#7AC142] text-[#252525]"
                                         >
                                             <Save className="w-4 h-4 mr-2" />
                                             Submit

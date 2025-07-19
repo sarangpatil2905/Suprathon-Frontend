@@ -279,7 +279,7 @@ const StudentDashboard = () => {
                     </div>
 
                     <div className="lg:col-span-2 bg-transparent">
-                        <Card className="bg-[#FAFAFA] rounded-lg shadow-md">
+                        <Card className="bg-[#FAFAFA]/80 rounded-lg shadow-md">
                             <CardHeader className="bg-transparent">
                                 <CardTitle className="flex items-center gap-2 text-[#252525]">
                                     <Calendar className="w-5 h-5 text-[#9FE477]" />

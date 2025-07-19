@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { Check, X, Loader2, Search, Mail, GraduationCap } from "lucide-react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
+import AdminNavbar from "@/components/AdminNavbar";
 
 interface Student {
     _id: string;
@@ -61,7 +62,7 @@ const AcceptAdmin = () => {
             } else {
                 newSet.add(studentId);
             }
-            console.log("Selected Students:", newSet); // Log new state
+            console.log("Selected Students:", newSet);
             return newSet;
         });
     };
@@ -100,18 +101,59 @@ const AcceptAdmin = () => {
         student.user.email.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    console.log(filteredStudents)
+    console.log(filteredStudents);
+
+    const getStatusColor = (status: string) => {
+        switch (status) {
+            case 'accepted':
+                return 'bg-[#e6f3e1] text-[#2f7d32] border-[#c8e6c9]';
+            case 'applied':
+                return 'bg-[#fff8e1] text-[#f57f17] border-[#ffe0b2]';
+            case 'rejected':
+                return 'bg-[#ffebee] text-[#d32f2f] border-[#ffcdd2]';
+            default:
+                return 'bg-[#f5f5f5] text-[#616161] border-[#e0e0e0]';
+        }
+    };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 p-6">
-            <div className="space-y-8">
+
+        <div className="min-h-screen bg-transparent text-gray-200 relative overflow-hidden">
+            {/* Background Blobs */}
+
+            <div
+                className="absolute w-72 h-72 opacity-30 blur-3xl rounded-full top-0 left-1/2 z-[-1]"
+                style={{
+                    background: "radial-gradient(circle at center, hsl(98, 67%, 68%) 0%, transparent 70%)",
+                }}
+            />
+            <div
+                className="absolute w-64 h-64 opacity-30 blur-2xl rounded-full bottom-0 left-6 z-[-1]"
+                style={{
+                    background: "radial-gradient(circle, hsl(98, 67%, 78%) 0%, transparent 80%)",
+                }}
+            />
+            <div
+                className="absolute w-64 h-64 opacity-30 blur-2xl rounded-full top-1/3 left-1/4 z-[-1]"
+                style={{
+                    background: "radial-gradient(circle, hsl(98, 67%, 73%) 0%, transparent 80%)",
+                }}
+            />
+            <div
+                className="absolute w-80 h-80 opacity-50 blur-3xl rounded-full bottom-1/4 right-20 z-[-1]"
+                style={{
+                    background: "radial-gradient(circle at center, hsl(98, 67%, 70%) 0%, transparent 75%)",
+                }}
+            />
+            <AdminNavbar />
+            <div className="p-6 space-y-8">
                 {/* Header */}
                 <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                     <div>
-                        <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                        <h1 className="text-3xl font-bold text-[#252525]">
                             Manage Students - {filteredStudents.length > 0 ? filteredStudents[0].company.name : "Loading..."}
                         </h1>
-                        <p className="text-slate-600 mt-1">Review and manage student applications</p>
+                        <p className="text-[#616161] mt-1">Review and manage student applications</p>
                     </div>
                 </div>
 
@@ -122,17 +164,17 @@ const AcceptAdmin = () => {
                         placeholder="Search by name or email..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pl-10 h-11 bg-white shadow-sm"
+                        className="w-full pl-10 h-11 bg-[#FAFAFA] shadow-sm border-[#e0e0e0] focus:border-[#9FE477]"
                     />
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#9FE477]" />
                 </div>
 
                 {/* Error or Loading Message */}
                 {(error || loading) && (
-                    <div className="bg-red-50 text-red-700 p-4 rounded-lg flex items-center gap-2">
+                    <div className={`p-4 rounded-lg flex items-center gap-2 ${error ? 'bg-[#ffebee] text-[#d32f2f] border-[#ffcdd2]' : 'bg-[#e6f3e1] text-[#2f7d32] border-[#c8e6c9]'}`}>
                         {loading ? (
                             <>
-                                <Loader2 className="w-5 h-5 animate-spin" />
+                                <Loader2 className="w-5 h-5 animate-spin text-[#9FE477]" />
                                 Loading students...
                             </>
                         ) : (
@@ -144,10 +186,10 @@ const AcceptAdmin = () => {
                 {/* Message Feedback */}
                 {message.text && (
                     <div className={`p-3 rounded-lg flex items-center gap-2 ${message.isError
-                        ? 'bg-red-50 text-red-700 border border-red-200'
-                        : 'bg-green-50 text-green-700 border border-green-200'
+                        ? 'bg-[#ffebee] text-[#d32f2f] border-[#ffcdd2]'
+                        : 'bg-[#e6f3e1] text-[#2f7d32] border-[#c8e6c9]'
                         }`}>
-                        {message.isError ? <X className="w-4 h-4" /> : <Check className="w-4 h-4" />}
+                        {message.isError ? <X className="w-4 h-4 text-[#d32f2f]" /> : <Check className="w-4 h-4 text-[#2f7d32]" />}
                         <span className="text-sm font-medium">{message.text}</span>
                     </div>
                 )}
@@ -157,38 +199,33 @@ const AcceptAdmin = () => {
                     {filteredStudents.map((student) => (
                         <div
                             key={student.user.id}
-                            className={`flex items-center justify-between p-4 bg-white shadow-md rounded-lg transition-all duration-300 ${student.status === 'accepted'
-                                ? 'bg-green-50'
-                                : student.status === 'rejected'
-                                    ? 'bg-red-50 opacity-75'
-                                    : 'hover:bg-blue-50/50'
-                                }`}
+                            className={`flex items-center justify-between p-4 bg-[#FAFAFA] shadow-md rounded-lg transition-all duration-300 ${getStatusColor(student.status)} hover:bg-[#f5f5f5]`}
                         >
                             <div className="flex items-center gap-4">
                                 <input
                                     type="checkbox"
                                     checked={selectedStudents.has(student.user.id)}
                                     onChange={() => handleSelect(student.user.id)}
-                                    className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                                    className="w-5 h-5 text-[#9FE477] border-[#e0e0e0] rounded focus:ring-[#9FE477]"
                                     disabled={student.status !== "applied"}
                                 />
                                 <div>
-                                    <p className="font-medium text-slate-800">{student.user.name}</p>
-                                    <div className="flex items-center gap-2 text-sm text-slate-600">
-                                        <Mail className="w-4 h-4" />
+                                    <p className="font-medium text-[#252525]">{student.user.name}</p>
+                                    <div className="flex items-center gap-2 text-sm text-[#616161]">
+                                        <Mail className="w-4 h-4 text-[#9FE477]" />
                                         <span>{student.user.email}</span>
-                                        <GraduationCap className="w-4 h-4 text-blue-600" />
+                                        <GraduationCap className="w-4 h-4 text-[#9FE477]" />
                                         <span>CGPA: {student.user.cgpa}</span>
                                     </div>
                                 </div>
                             </div>
-                            <span className="text-sm font-medium text-slate-600">
-                                Status: {student.status}
+                            <span className={`text-sm font-medium ${getStatusColor(student.status).split(' ')[1]}`}>
+                                Status: {student.status.charAt(0).toUpperCase() + student.status.slice(1)}
                             </span>
                         </div>
                     ))}
                     {filteredStudents.length === 0 && !loading && (
-                        <p className="text-center text-slate-500">
+                        <p className="text-center text-[#757575]">
                             No students found matching your search.
                         </p>
                     )}
@@ -198,9 +235,9 @@ const AcceptAdmin = () => {
                 <div className="flex justify-end">
                     <Button
                         onClick={handleSubmit}
-                        className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white"
+                        className="bg-[#9FE477] hover:bg-[#7AC142] text-[#252525] shadow-lg"
                     >
-                        <Check className="w-4 h-4 mr-2" /> Accept Selected Students
+                        <Check className="w-4 h-4 mr-2 text-[#252525]" /> Accept Selected Students
                     </Button>
                 </div>
             </div>
