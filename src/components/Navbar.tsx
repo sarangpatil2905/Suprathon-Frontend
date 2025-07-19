@@ -26,13 +26,11 @@ const Navbar = () => {
                             <a href="/dashboard" className="text-muted-foreground hover:text-foreground transition-colors">
                                 Dashboard
                             </a>
-                            <a href="/apply" className="text-muted-foreground hover:text-foreground transition-colors">
+                            <a href="/companies" className="text-muted-foreground hover:text-foreground transition-colors">
                                 Apply for Job
                             </a>
-                            <a href="/applications" className="text-muted-foreground hover:text-foreground transition-colors">
-                                Check Application
-                            </a>
-                            <a href="/stats" className="text-muted-foreground hover:text-foreground transition-colors">
+
+                            <a href="/placement-stats" className="text-muted-foreground hover:text-foreground transition-colors">
                                 View Stats
                             </a>
                         </nav>
