@@ -1,7 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { GraduationCap, Menu } from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
 
 const Header = () => {
+  const location = useLocation();
+  const isAuthPage = location.pathname === "/login" || location.pathname === "/signup";
+
   return (
     <header className="w-full bg-card/80 backdrop-blur-sm border-b border-border/50 sticky top-0 z-50">
       <div className="container mx-auto px-4 lg:px-6">
@@ -15,35 +19,45 @@ const Header = () => {
           </div>
 
           {/* Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
-            <a href="#features" className="text-muted-foreground hover:text-foreground transition-colors">
-              Features
-            </a>
-            <a href="#analytics" className="text-muted-foreground hover:text-foreground transition-colors">
-              Analytics
-            </a>
-            <a href="#benefits" className="text-muted-foreground hover:text-foreground transition-colors">
-              Benefits
-            </a>
-            <a href="#contact" className="text-muted-foreground hover:text-foreground transition-colors">
-              Contact
-            </a>
-          </nav>
+          {!isAuthPage && (
+            <nav className="hidden md:flex items-center space-x-8">
+              <a href="#features" className="text-muted-foreground hover:text-foreground transition-colors">
+                Features
+              </a>
+              <a href="#analytics" className="text-muted-foreground hover:text-foreground transition-colors">
+                Analytics
+              </a>
+              <a href="#benefits" className="text-muted-foreground hover:text-foreground transition-colors">
+                Benefits
+              </a>
+              <a href="#contact" className="text-muted-foreground hover:text-foreground transition-colors">
+                Contact
+              </a>
+            </nav>
+          )}
 
           {/* CTA Buttons */}
-          <div className="hidden md:flex items-center space-x-3">
-            <Button variant="ghost" size="sm">
-              Login
-            </Button>
-            <Button size="sm" className="bg-gradient-primary hover:opacity-90">
-              Try Demo
-            </Button>
-          </div>
+          {!isAuthPage && (
+            <div className="hidden md:flex items-center space-x-3">
+              <Link to="/login">
+                <Button variant="ghost" size="sm" className="rounded-2xl">
+                  Login
+                </Button>
+              </Link>
+              <Link to="/signup">
+                <Button size="sm" className="bg-primary rounded-2xl hover:opacity-90">
+                  SignUp
+                </Button>
+              </Link>
+            </div>
+          )}
 
           {/* Mobile Menu */}
-          <Button variant="ghost" size="icon" className="md:hidden">
-            <Menu className="w-5 h-5" />
-          </Button>
+          {!isAuthPage && (
+            <Button variant="ghost" size="icon" className="md:hidden">
+              <Menu className="w-5 h-5" />
+            </Button>
+          )}
         </div>
       </div>
     </header>
