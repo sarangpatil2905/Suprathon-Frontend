@@ -62,7 +62,7 @@ const StudentDashboard = () => {
 
     const fetchCompanies = async () => {
         try {
-            const response = await axios.get('http://localhost:8000/companies/getAllCompanies', { withCredentials: true });
+            const response = await axios.get('http://localhost:8000/company/getAllCompanies', { withCredentials: true });
             setCompanies(response.data.data.companies);
         } catch (err) {
             console.log(err.message);
@@ -160,18 +160,10 @@ const StudentDashboard = () => {
                                 <User className="w-8 h-8 text-primary" />
                             </div>
                             <div className="flex-1">
-                                <h2 className="text-xl font-bold">{userData.name}</h2>
-                                <p className="text-muted-foreground">{userData.rollNumber} • {userData.branch}</p>
+                                <h2 className="text-xl font-bold">{userData.firstName + " " + userData.lastName}</h2>
                                 <div className="flex items-center gap-4 mt-2">
-                                    <Badge variant="secondary">{userData.year}</Badge>
+                                    <Badge variant="secondary">4th Year</Badge>
                                     <span className="text-sm">CGPA: <span className="font-bold text-primary">{userData.cgpa}</span></span>
-                                </div>
-                            </div>
-                            <div className="text-right">
-                                <p className="text-sm text-muted-foreground">Profile Completion</p>
-                                <div className="flex items-center gap-2 mt-1">
-                                    <Progress value={85} className="w-20 h-2" />
-                                    <span className="text-sm font-medium">85%</span>
                                 </div>
                             </div>
                         </div>
