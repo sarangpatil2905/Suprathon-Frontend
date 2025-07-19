@@ -8,6 +8,8 @@ import NotFound from "./pages/NotFound";
 import Login from "./pages/LoginPage";
 import Signup from "./pages/SignupPage";
 import Dashboard from "./pages/StudentDashboard";
+import Companies from "./pages/Companies";
+import PlacementStats from "./pages/PlacementStats";
 
 const queryClient = new QueryClient();
 
@@ -22,6 +24,8 @@ const App = () => (
           <Route path="/signup" element={<Signup />} />
           <Route path="/login" element={<Login />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path='/companies' element={<Companies />} />
+          <Route path='/placement-stats' element={<PlacementStats />} />
           <Route path="*" element={<NotFound />} />
 
         </Routes>

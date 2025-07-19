@@ -50,9 +50,8 @@ const StudentDashboard = () => {
 
     const fetchComapanies = async () => {
         try {
-            const response = await axios.get('http://localhost:8000/companies/getAllCompanies', { withCredentials: true });
+            const response = await axios.get('http://localhost:8000/company/getAllCompanies', { withCredentials: true });
             setCompanies(response.data.data.companies);
-            console.log(response.data.data.companies);
         } catch (err) {
             console.log(err.message);
         }
@@ -153,18 +152,10 @@ const StudentDashboard = () => {
                                 <User className="w-8 h-8 text-primary" />
                             </div>
                             <div className="flex-1">
-                                <h2 className="text-xl font-bold">{userData.name}</h2>
-                                <p className="text-muted-foreground">{userData.rollNumber} • {userData.branch}</p>
+                                <h2 className="text-xl font-bold">{userData.firstName + " " + userData.lastName}</h2>
                                 <div className="flex items-center gap-4 mt-2">
-                                    <Badge variant="secondary">{userData.year}</Badge>
+                                    <Badge variant="secondary">4th Year</Badge>
                                     <span className="text-sm">CGPA: <span className="font-bold text-primary">{userData.cgpa}</span></span>
-                                </div>
-                            </div>
-                            <div className="text-right">
-                                <p className="text-sm text-muted-foreground">Profile Completion</p>
-                                <div className="flex items-center gap-2 mt-1">
-                                    <Progress value={85} className="w-20 h-2" />
-                                    <span className="text-sm font-medium">85%</span>
                                 </div>
                             </div>
                         </div>
@@ -283,36 +274,6 @@ const StudentDashboard = () => {
                             </CardContent>
                         </Card>
                     </div>
-                </div>
-
-                {/* Quick Actions */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20 hover:shadow-[var(--shadow-elegant)] transition-all cursor-pointer">
-                        <CardContent className="p-6 text-center">
-                            <BookOpen className="w-8 h-8 text-primary mx-auto mb-3" />
-                            <h3 className="font-medium mb-2">Placement Preparation</h3>
-                            <p className="text-sm text-muted-foreground mb-4">Access study materials and practice tests</p>
-                            <Button variant="outline" size="sm">Browse Resources</Button>
-                        </CardContent>
-                    </Card>
-
-                    <Card className="bg-gradient-to-br from-success/5 to-success/10 border-success/20 hover:shadow-[var(--shadow-elegant)] transition-all cursor-pointer">
-                        <CardContent className="p-6 text-center">
-                            <TrendingUp className="w-8 h-8 text-success mx-auto mb-3" />
-                            <h3 className="font-medium mb-2">Skill Assessment</h3>
-                            <p className="text-sm text-muted-foreground mb-4">Take tests to validate your skills</p>
-                            <Button variant="outline" size="sm">Start Assessment</Button>
-                        </CardContent>
-                    </Card>
-
-                    <Card className="bg-gradient-to-br from-info/5 to-info/10 border-info/20 hover:shadow-[var(--shadow-elegant)] transition-all cursor-pointer">
-                        <CardContent className="p-6 text-center">
-                            <Building2 className="w-8 h-8 text-info mx-auto mb-3" />
-                            <h3 className="font-medium mb-2">Company Database</h3>
-                            <p className="text-sm text-muted-foreground mb-4">Explore opportunities and company profiles</p>
-                            <Button variant="outline" size="sm">View Companies</Button>
-                        </CardContent>
-                    </Card>
                 </div>
             </div>
         </div>
