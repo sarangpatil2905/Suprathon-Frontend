@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Header from "@/components/Header";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
     Select,
     SelectContent,
@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
 import { Upload } from "lucide-react";
+import axios from "axios";
 
 const SignupForm = () => {
     const [formData, setFormData] = useState({
@@ -23,34 +24,98 @@ const SignupForm = () => {
         phoneNumber: "",
         age: "",
         gender: "",
-        userType: "",
         cgpa: "",
     });
 
     const [resumeFile, setResumeFile] = useState<File | null>(null);
     const [step, setStep] = useState(1);
+    const [error, setError] = useState<string | null>(null);
+    const navigate = useNavigate();
 
     const handleInputChange = (field: string, value: string) => {
         setFormData((prev) => ({ ...prev, [field]: value }));
+        setError(null); // Clear error on input change
     };
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file && file.type === "application/pdf") {
-            setResumeFile(file);
+            if (file.size > 5 * 1024 * 1024) { // 5MB limit
+                setError("File size must be less than 5MB");
+                setResumeFile(null);
+            } else {
+                setResumeFile(file);
+                setError(null);
+            }
         } else {
-            alert("Please upload a PDF file only");
+            setError("Please upload a PDF file only");
+            setResumeFile(null);
         }
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const validateStep1 = () => {
+        const { firstName, lastName, phoneNumber, age, gender, cgpa } = formData;
+        if (!firstName || !lastName || !phoneNumber || !age || !gender || !cgpa) {
+            setError("All fields are required in Step 1");
+            return false;
+        }
+        if (parseFloat(cgpa) < 0 || parseFloat(cgpa) > 10) {
+            setError("CGPA must be between 0 and 10");
+            return false;
+        }
+        if (parseInt(age) < 18 || parseInt(age) > 100) {
+            setError("Age must be between 18 and 100");
+            return false;
+        }
+        return true;
+    };
+
+    const validateStep2 = () => {
+        const { email, password } = formData;
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!email || !password || !resumeFile) {
+            setError("All fields are required in Step 2");
+            return false;
+        }
+        if (!emailRegex.test(email)) {
+            setError("Please enter a valid email address");
+            return false;
+        }
+        if (password.length < 6) {
+            setError("Password must be at least 6 characters long");
+            return false;
+        }
+        return true;
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (step === 1) {
-            setStep(2);
+            if (validateStep1()) {
+                setStep(2);
+            }
         } else {
-            console.log("Form Data:", formData);
-            console.log("Resume File:", resumeFile);
-            // Actual submission logic here
+            if (validateStep2()) {
+                const formDataToSend = new FormData();
+                Object.entries(formData).forEach(([key, value]) => {
+                    formDataToSend.append(key, value);
+                });
+                formDataToSend.append('userType', 'student');
+                if (resumeFile) {
+                    formDataToSend.append("resume", resumeFile);
+                }
+
+                try {
+                    const response = await axios.post("http://localhost:8000/user/signup", formDataToSend, {
+                        headers: { "Content-Type": "multipart/form-data" },
+                        withCredentials: true,
+                    });
+                    console.log("Signup successful:", response.data);
+                    navigate("/login");
+                } catch (err: any) {
+                    setError(err.response?.data?.message || "Signup failed. Please try again.");
+                }
+            }
         }
     };
 
@@ -63,15 +128,12 @@ const SignupForm = () => {
                 <div className="absolute w-52 h-52 bg-[radial-gradient(circle,_hsl(98,67%,73%)_0%,_transparent_80%)] opacity-50 blur-2xl rounded-full top-1/3 right-1/2 z-[-1]" />
 
                 {/* Left Section - Illustration */}
-                <div className="hidden lg:flex lg:w-1/2 items-center justify-center ">
-
-
+                <div className="hidden lg:flex lg:w-1/2 items-center justify-center">
                     <div className="max-w-md text-center">
-
                         <h1 className="text-3xl font-bold text-foreground mb-4">
                             Get started with smart placement tracking
                         </h1>
-                        <p className="text-muted-foreground text-lg ">
+                        <p className="text-muted-foreground text-lg">
                             OCR-based resume parsing, and instant analytics.
                         </p>
                         <img
@@ -83,10 +145,10 @@ const SignupForm = () => {
                 </div>
 
                 {/* Right Section - Form */}
-                <div className="flex-1 flex flex-col justify-center items-center p-6 lg:p-12 ">
-                    <Card className="w-full max-w-xl md:max-w-2xl p-6 md:p-8 flex flex-col justify-between ">
+                <div className="flex-1 flex flex-col justify-center items-center p-6 lg:p-12">
+                    <Card className="w-full max-w-xl md:max-w-2xl p-6 md:p-8 flex flex-col justify-between">
                         <form onSubmit={handleSubmit} className="space-y-6">
-                            <div className="text-center mb-4 ">
+                            <div className="text-center mb-4">
                                 <h2 className="text-2xl font-bold text-foreground">
                                     Create Account
                                 </h2>
@@ -94,6 +156,8 @@ const SignupForm = () => {
                                     Step {step} of 2 — Fill in your details
                                 </p>
                             </div>
+
+                            {error && <p className="text-center text-red-500">{error}</p>}
 
                             {/* Step 1: Basic Info */}
                             {step === 1 && (
@@ -166,11 +230,11 @@ const SignupForm = () => {
                                                     <SelectValue placeholder="Select gender" />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    <SelectItem value="male">Male</SelectItem>
-                                                    <SelectItem value="female">Female</SelectItem>
-                                                    <SelectItem value="other">Other</SelectItem>
-                                                    <SelectItem value="prefer-not-to-say">
-                                                        Prefer not to say
+                                                    <SelectItem value="Male">Male</SelectItem>
+                                                    <SelectItem value="Female">Female</SelectItem>
+                                                    <SelectItem value="Other">Other</SelectItem>
+                                                    <SelectItem value="Rather Not Say">
+                                                        Rather Not Say
                                                     </SelectItem>
                                                 </SelectContent>
                                             </Select>
