@@ -469,6 +469,7 @@ const AdminCompanies = () => {
                                 </Button>
                                 <Button
                                     onClick={() => { navigate(`/accept-admin/${company._id}`) }}
+                                    disabled={isCompleted(company.schedule[company.schedule.length - 1].date)}
                                     className={`w-full ${isCompleted(company.schedule[company.schedule.length - 1].date) ? 'bg-[#9FE477] hover:bg-[#7AC142] text-[#252525]' : 'bg-[#252525] hover:bg-[#9FE477]/80 text-[#f3f3f3] hover:text-[#252525]'}`}
                                 >
                                     <Check className="w-4 h-4 mr-2" /> {isCompleted(company.schedule[company.schedule.length - 1].date) ? "Ongoing" : "Finalize Students"}

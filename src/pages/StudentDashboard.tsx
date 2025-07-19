@@ -252,22 +252,7 @@ const StudentDashboard = () => {
                                                     {skill}
                                                 </span>
                                             ))}
-                                            <button
-                                                className="w-20 inline-block bg-gray-100 border-dashed border-2 border-gray-300 text-gray-400 text-sm font-medium px-3 py-1 rounded-full hover:bg-gray-200 transition-colors"
-                                                onClick={() => console.log("Add skill clicked")} // Replace with actual handler
-                                            >
-                                                +
-                                            </button>
                                         </div>
-                                    </div>
-                                    {/* Resume Update Button */}
-                                    <div className="flex justify-center bg-transparent">
-                                        <button
-                                            className="w-full bg-[#252525] text-[#f3f3f3] text-sm font-medium px-4 py-2 rounded-full hover:bg-[#9FE477]/80 transition-colors"
-                                            onClick={() => console.log("Update resume clicked")} // Replace with actual handler
-                                        >
-                                            Update Resume
-                                        </button>
                                     </div>
                                 </div>
                             </CardContent>

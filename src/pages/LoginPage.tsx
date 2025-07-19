@@ -62,6 +62,8 @@ const LoginPage = () => {
                     "repeating-linear-gradient(to right, #e5e7eb 0px, #e5e7eb 1px, transparent 0px, transparent 140px)",
             }}
         >
+
+            <Header />
             <div
                 className="fixed w-72 h-72 opacity-50 blur-3xl rounded-full top-0 left-1/2 z-[-1]"
                 style={{
@@ -86,9 +88,6 @@ const LoginPage = () => {
                     background: "radial-gradient(circle at center, hsl(98, 67%, 70%) 0%, transparent 75%)",
                 }}
             />
-
-            <Header />
-
             {/* Header Text */}
             <div className="text-center mb-6">
                 <h2 className="text-sm font-semibold text-gray-500 tracking-widest uppercase">Members</h2>
