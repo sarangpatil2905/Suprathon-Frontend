@@ -8,7 +8,6 @@ import NotFound from "./pages/NotFound";
 import Login from "./pages/LoginPage";
 import Signup from "./pages/SignupPage";
 import Dashboard from "./pages/StudentDashboard";
-import { UserProvider } from "@/context/usercontext";
 
 const queryClient = new QueryClient();
 

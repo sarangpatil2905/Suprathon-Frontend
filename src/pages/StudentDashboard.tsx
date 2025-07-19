@@ -2,6 +2,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+
 import {
     User,
     FileText,
@@ -15,6 +17,7 @@ import {
     TrendingUp
 } from "lucide-react";
 import { StatsCard } from "@/components/StatsCard";
+import { useEffect, useState } from "react";
 
 interface StudentData {
     name: string;
@@ -28,10 +31,44 @@ interface StudentDashboardProps {
     userData: StudentData;
 }
 
-import { useUser } from "@/context/usercontext";
+import { useUser } from "../context/UserContext";
+import axios from "axios";
 
 const StudentDashboard = () => {
     const { userData } = useUser();
+    const [myApplications, setMyApplications] = useState([]);
+    const [companies, setCompanies] = useState([]);
+
+    const fetchMyApplications = async () => {
+        try {
+            const response = await axios.get('http://localhost:8000/application/getAllApplicationsByUser', { withCredentials: true });
+            setMyApplications(response.data.applications);
+        } catch (err) {
+            console.log(err.message);
+        }
+    }
+
+    const fetchComapanies = async () => {
+        try {
+            const response = await axios.get('http://localhost:8000/companies/getAllCompanies', { withCredentials: true });
+            setCompanies(response.data.data.companies);
+            console.log(response.data.data.companies);
+        } catch (err) {
+            console.log(err.message);
+        }
+    }
+
+    useEffect(() => {
+        fetchMyApplications();
+        fetchComapanies();
+    }, [])
+    // const { logout } = useUser();
+    // const navigate = useNavigate();
+
+    // const handleLogout = () => {
+    //     logout();
+    //     navigate("/"); // or navigate("/login") depending on your flow
+    // };
 
     if (!userData) return <div>Loading...</div>;
 
@@ -66,30 +103,6 @@ const StudentDashboard = () => {
         }
     ];
 
-    const recentApplications = [
-        {
-            company: "Flipkart",
-            role: "Full Stack Developer",
-            appliedDate: "2 days ago",
-            status: "under_review",
-            package: "18 LPA"
-        },
-        {
-            company: "Zomato",
-            role: "Frontend Developer",
-            appliedDate: "1 week ago",
-            status: "shortlisted",
-            package: "16 LPA"
-        },
-        {
-            company: "Paytm",
-            role: "Backend Developer",
-            appliedDate: "1 week ago",
-            status: "rejected",
-            package: "15 LPA"
-        }
-    ];
-
     const getStatusColor = (status: string) => {
         switch (status) {
             case 'confirmed':
@@ -105,6 +118,7 @@ const StudentDashboard = () => {
         }
     };
 
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-primary/5">
             <div className="p-6 space-y-6">
@@ -112,20 +126,21 @@ const StudentDashboard = () => {
                 <div className="flex flex-col space-y-4">
                     <div className="flex items-center justify-between">
                         <div>
-                            <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
+                            <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent text-black">
                                 Student Dashboard
                             </h1>
                             <p className="text-muted-foreground">Track your placement journey and applications</p>
                         </div>
                         <div className="flex gap-3">
-                            <Button variant="outline" className="border-primary/20 hover:bg-primary/5">
-                                <Download className="w-4 h-4 mr-2" />
-                                Download Resume
-                            </Button>
-                            <Button className="bg-gradient-to-r from-primary to-primary-glow hover:opacity-90 shadow-lg">
-                                <Upload className="w-4 h-4 mr-2" />
-                                Update Profile
-                            </Button>
+
+                            {/* <Button
+                                onClick={handleLogout}
+                                className="bg-gradient-to-r from-primary to-primary-glow hover:opacity-90 shadow-lg"
+                            >
+                                Logout
+                            </Button> */}
+
+
                         </div>
                     </div>
                 </div>
@@ -242,15 +257,14 @@ const StudentDashboard = () => {
                             </CardHeader>
                             <CardContent className="p-0">
                                 <div className="space-y-0">
-                                    {recentApplications.map((application, index) => (
+                                    {myApplications.map((application, index) => (
                                         <div
                                             key={index}
-                                            className={`p-4 hover:bg-muted/30 transition-colors cursor-pointer ${index !== recentApplications.length - 1 ? 'border-b border-border/50' : ''
-                                                }`}
+                                            className={`p-4 hover:bg-muted/30 transition-colors cursor-pointer`}
                                         >
                                             <div className="space-y-2">
                                                 <div className="flex items-center justify-between">
-                                                    <h4 className="font-medium text-sm">{application.company}</h4>
+                                                    <h4 className="font-medium text-sm">{application.companyName}</h4>
                                                     <Badge className={getStatusColor(application.status)} variant="outline">
                                                         {application.status.replace('_', ' ')}
                                                     </Badge>
@@ -258,8 +272,8 @@ const StudentDashboard = () => {
                                                 <div className="space-y-1">
                                                     <p className="text-sm text-muted-foreground">{application.role}</p>
                                                     <div className="flex items-center justify-between text-xs">
-                                                        <span className="text-muted-foreground">{application.appliedDate}</span>
-                                                        <span className="font-medium text-success">{application.package}</span>
+                                                        <span className="text-muted-foreground">{new Date(application.createdAt).toISOString()}</span>
+                                                        {/* <span className="font-medium text-success">{application.package}</span> */}
                                                     </div>
                                                 </div>
                                             </div>

@@ -1,26 +1,53 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom"; // Step 1
+import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import axios from "axios";
+import { useUser } from "../context/UserContext"; // adjust path if needed
 
 const LoginPage = () => {
     const [userType, setUserType] = useState<"student" | "tpo">("student");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const navigate = useNavigate(); // Step 2
+    const navigate = useNavigate();
+    const { setUserData } = useUser(); // access context
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        // Mock authentication logic
-        if (email && password) {
-            const result = await axios.post("http://localhost:8000/user/login", {
-                email: email,
-                password: password,
-            })
-            console.log(result)
-        } else {
+        if (!email || !password) {
             alert("Please enter email and password.");
+            return;
+        }
+
+        try {
+            const res = await axios.post(
+                "http://localhost:8000/user/login",
+                {
+                    email,
+                    password,
+                    type: userType,
+                },
+                {
+                    withCredentials: true,
+                }
+            );
+
+            console.log("Login response:", res.data);
+
+            if (res.status === 200 && res.data.user) {
+                const user = res.data.user;
+
+                // Set user data in context and localStorage
+                setUserData(user);
+                localStorage.setItem("userData", JSON.stringify(user));
+
+                navigate("/dashboard");
+            } else {
+                alert("Invalid login response.");
+            }
+        } catch (err: any) {
+            console.error("Login failed:", err?.response?.data || err.message);
+            alert("Login failed: " + (err?.response?.data?.message || "Check your credentials"));
         }
     };
 
@@ -34,9 +61,6 @@ const LoginPage = () => {
             }}
         >
             <Header />
-
-            {/* Gradient backgrounds */}
-            {/* ... keep your background spots here ... */}
 
             {/* Header Text */}
             <div className="text-center mb-6">
