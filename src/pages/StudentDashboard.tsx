@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-
+import Navbar from "@/components/Navbar";
 import {
     User,
     FileText,
@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { StatsCard } from "@/components/StatsCard";
 import { useEffect, useState } from "react";
+import React from 'react';
 
 interface StudentData {
     name: string;
@@ -25,6 +26,15 @@ interface StudentData {
     branch: string;
     year: string;
     cgpa: number;
+}
+
+interface Interview {
+    company: string;
+    role: string;
+    date: string;
+    time: string;
+    type: string;
+    status: string;
 }
 
 interface StudentDashboardProps {
@@ -38,6 +48,8 @@ const StudentDashboard = () => {
     const { userData } = useUser();
     const [myApplications, setMyApplications] = useState([]);
     const [companies, setCompanies] = useState([]);
+    const [upcomingInterviews, setUpcomingInterviews] = useState<Interview[]>([]);
+    const [currentWeekOffset, setCurrentWeekOffset] = useState(0);
 
     const fetchMyApplications = async () => {
         try {
@@ -46,29 +58,31 @@ const StudentDashboard = () => {
         } catch (err) {
             console.log(err.message);
         }
-    }
+    };
 
-    const fetchComapanies = async () => {
+    const fetchCompanies = async () => {
         try {
             const response = await axios.get('http://localhost:8000/companies/getAllCompanies', { withCredentials: true });
             setCompanies(response.data.data.companies);
-            console.log(response.data.data.companies);
         } catch (err) {
             console.log(err.message);
         }
-    }
+    };
+
+    const fetchUpcomingInterviews = async () => {
+        try {
+            const response = await axios.get('http://localhost:8000/interviews/getUpcomingInterviews', { withCredentials: true });
+            setUpcomingInterviews(response.data.interviews);
+        } catch (err) {
+            console.log(err.message);
+        }
+    };
 
     useEffect(() => {
         fetchMyApplications();
-        fetchComapanies();
-    }, [])
-    // const { logout } = useUser();
-    // const navigate = useNavigate();
-
-    // const handleLogout = () => {
-    //     logout();
-    //     navigate("/"); // or navigate("/login") depending on your flow
-    // };
+        fetchCompanies();
+        fetchUpcomingInterviews();
+    }, []);
 
     if (!userData) return <div>Loading...</div>;
 
@@ -78,30 +92,6 @@ const StudentDashboard = () => {
         interviewsScheduled: 3,
         offersReceived: 2
     };
-
-    const upcomingInterviews = [
-        {
-            company: "Google",
-            role: "Software Engineer",
-            date: "Tomorrow, 2:00 PM",
-            type: "Technical Round",
-            status: "confirmed"
-        },
-        {
-            company: "Microsoft",
-            role: "Product Manager Intern",
-            date: "Dec 28, 10:00 AM",
-            type: "HR Round",
-            status: "confirmed"
-        },
-        {
-            company: "Amazon",
-            role: "SDE-1",
-            date: "Dec 30, 3:00 PM",
-            type: "Technical Round",
-            status: "pending"
-        }
-    ];
 
     const getStatusColor = (status: string) => {
         switch (status) {
@@ -118,34 +108,51 @@ const StudentDashboard = () => {
         }
     };
 
+    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const today = new Date('2025-07-19T20:50:00+05:30'); // Current date and time: 08:50 PM IST
+    const startOfWeek = new Date(today);
+    startOfWeek.setDate(today.getDate() - today.getDay() + currentWeekOffset * 7);
+    const weekDays = Array.from({ length: 28 }, (_, i) => {
+        const date = new Date(startOfWeek);
+        date.setDate(startOfWeek.getDate() + i);
+        return {
+            day: days[date.getDay()],
+            date: date.getDate(),
+            month: date.toLocaleString('default', { month: 'short' }),
+            fullDate: date.toISOString().split('T')[0],
+            isPast: date < today,
+            interviews: upcomingInterviews.filter(interview => {
+                const interviewDate = new Date(`${interview.date}T${interview.time}`);
+                return interviewDate.toDateString() === date.toDateString();
+            })
+        };
+    }).slice(0, 28); // 4 weeks (28 days)
+
+    const timeSlots = Array.from({ length: 10 }, (_, i) => {
+        const hour = 9 + Math.floor(i / 2);
+        const minute = i % 2 === 0 ? '00' : '30';
+        const period = hour >= 12 ? 'pm' : 'am';
+        return `${hour % 12 || 12}:${minute} ${period}`;
+    });
+
+    const handlePreviousWeek = () => setCurrentWeekOffset(offset => Math.max(offset - 1, -1));
+    const handleNextWeek = () => setCurrentWeekOffset(offset => Math.min(offset + 1, 2));
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-primary/5">
+            <Navbar />
             <div className="p-6 space-y-6">
-                {/* Header */}
                 <div className="flex flex-col space-y-4">
                     <div className="flex items-center justify-between">
                         <div>
-                            <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent text-black">
+                            <h1 className="text-3xl font-bold bg-primary bg-clip-text text-transparent text-black">
                                 Student Dashboard
                             </h1>
                             <p className="text-muted-foreground">Track your placement journey and applications</p>
                         </div>
-                        <div className="flex gap-3">
-
-                            {/* <Button
-                                onClick={handleLogout}
-                                className="bg-gradient-to-r from-primary to-primary-glow hover:opacity-90 shadow-lg"
-                            >
-                                Logout
-                            </Button> */}
-
-
-                        </div>
                     </div>
                 </div>
 
-                {/* Profile Card */}
                 <Card className="bg-gradient-to-r from-card to-card/80 border-0 shadow-[var(--shadow-card)]">
                     <CardContent className="p-6">
                         <div className="flex items-center gap-6">
@@ -171,81 +178,50 @@ const StudentDashboard = () => {
                     </CardContent>
                 </Card>
 
-                {/* Stats Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <StatsCard
-                        title="Total Applications"
-                        value={applicationStats.totalApplications.toString()}
-                        icon={FileText}
-                        trend="+2"
-                        className="col-span-1"
-                    />
-                    <StatsCard
-                        title="Pending Review"
-                        value={applicationStats.pendingApplications.toString()}
-                        icon={Calendar}
-                        trend="-1"
-                        className="col-span-1"
-                    />
-                    <StatsCard
-                        title="Interviews Scheduled"
-                        value={applicationStats.interviewsScheduled.toString()}
-                        icon={Target}
-                        trend="+1"
-                        className="col-span-1"
-                    />
-                    <StatsCard
-                        title="Offers Received"
-                        value={applicationStats.offersReceived.toString()}
-                        icon={Award}
-                        trend="+1"
-                        className="col-span-1"
-                    />
-                </div>
-
-                {/* Main Content */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {/* Upcoming Interviews */}
                     <div className="lg:col-span-2">
                         <Card className="bg-gradient-to-br from-card to-card/80 border-0 shadow-[var(--shadow-card)]">
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2">
                                     <Calendar className="w-5 h-5 text-primary" />
-                                    Upcoming Interviews
+                                    Calendar Overview
                                 </CardTitle>
                                 <CardDescription>Your scheduled interview sessions</CardDescription>
                             </CardHeader>
-                            <CardContent className="space-y-4">
-                                {upcomingInterviews.map((interview, index) => (
-                                    <div
-                                        key={index}
-                                        className="p-4 bg-muted/30 rounded-lg border border-border/50 hover:bg-muted/50 transition-colors"
-                                    >
-                                        <div className="flex items-center justify-between mb-3">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg flex items-center justify-center">
-                                                    <Building2 className="w-5 h-5 text-primary" />
-                                                </div>
-                                                <div>
-                                                    <h4 className="font-medium">{interview.company}</h4>
-                                                    <p className="text-sm text-muted-foreground">{interview.role}</p>
-                                                </div>
-                                            </div>
-                                            <Badge className={getStatusColor(interview.status)}>
-                                                {interview.status}
-                                            </Badge>
+                            <CardContent>
+                                <div className="flex justify-between items-center mb-4">
+                                    <Button onClick={handlePreviousWeek} disabled={currentWeekOffset === -1}>Previous</Button>
+                                    <span>Week {currentWeekOffset + 1}</span>
+                                    <Button onClick={handleNextWeek} disabled={currentWeekOffset === 2}>Next</Button>
+                                </div>
+                                <div className="grid grid-cols-[auto,repeat(7,1fr)] gap-2 text-center">
+                                    <div></div>
+                                    {days.map(day => (
+                                        <div key={day} className="font-semibold text-muted-foreground">
+                                            {day.slice(0, 3)}
                                         </div>
-                                        <div className="flex items-center justify-between text-sm">
-                                            <span className="text-muted-foreground">{interview.type}</span>
-                                            <span className="font-medium">{interview.date}</span>
-                                        </div>
-                                    </div>
-                                ))}
+                                    ))}
+                                </div>
+                                <div className="grid grid-cols-[auto,repeat(7,1fr)] gap-2 mt-2">
+                                    {timeSlots.map(time => (
+                                        <React.Fragment key={time}>
+                                            <div className="text-sm font-medium">{time}</div>
+                                            {weekDays.slice(currentWeekOffset * 7, (currentWeekOffset + 1) * 7).map((day, index) => (
+                                                <div key={index} className={`border rounded-lg p-1 h-16 overflow-y-auto ${day.isPast ? 'bg-gray-200' : 'bg-card'}`}>
+                                                    {day.interviews.map((interview, i) => (
+                                                        <div key={i} className={`p-1 mt-1 text-xs rounded ${getStatusColor(interview.status)}`}>
+                                                            {interview.company}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            ))}
+                                        </React.Fragment>
+                                    ))}
+                                </div>
                             </CardContent>
                         </Card>
                     </div>
 
-                    {/* Recent Applications */}
                     <div>
                         <Card className="bg-gradient-to-br from-card to-card/80 border-0 shadow-[var(--shadow-card)]">
                             <CardHeader>
@@ -260,7 +236,7 @@ const StudentDashboard = () => {
                                     {myApplications.map((application, index) => (
                                         <div
                                             key={index}
-                                            className={`p-4 hover:bg-muted/30 transition-colors cursor-pointer`}
+                                            className="p-4 hover:bg-muted/30 transition-colors cursor-pointer"
                                         >
                                             <div className="space-y-2">
                                                 <div className="flex items-center justify-between">
@@ -273,7 +249,6 @@ const StudentDashboard = () => {
                                                     <p className="text-sm text-muted-foreground">{application.role}</p>
                                                     <div className="flex items-center justify-between text-xs">
                                                         <span className="text-muted-foreground">{new Date(application.createdAt).toISOString()}</span>
-                                                        {/* <span className="font-medium text-success">{application.package}</span> */}
                                                     </div>
                                                 </div>
                                             </div>
@@ -283,36 +258,6 @@ const StudentDashboard = () => {
                             </CardContent>
                         </Card>
                     </div>
-                </div>
-
-                {/* Quick Actions */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20 hover:shadow-[var(--shadow-elegant)] transition-all cursor-pointer">
-                        <CardContent className="p-6 text-center">
-                            <BookOpen className="w-8 h-8 text-primary mx-auto mb-3" />
-                            <h3 className="font-medium mb-2">Placement Preparation</h3>
-                            <p className="text-sm text-muted-foreground mb-4">Access study materials and practice tests</p>
-                            <Button variant="outline" size="sm">Browse Resources</Button>
-                        </CardContent>
-                    </Card>
-
-                    <Card className="bg-gradient-to-br from-success/5 to-success/10 border-success/20 hover:shadow-[var(--shadow-elegant)] transition-all cursor-pointer">
-                        <CardContent className="p-6 text-center">
-                            <TrendingUp className="w-8 h-8 text-success mx-auto mb-3" />
-                            <h3 className="font-medium mb-2">Skill Assessment</h3>
-                            <p className="text-sm text-muted-foreground mb-4">Take tests to validate your skills</p>
-                            <Button variant="outline" size="sm">Start Assessment</Button>
-                        </CardContent>
-                    </Card>
-
-                    <Card className="bg-gradient-to-br from-info/5 to-info/10 border-info/20 hover:shadow-[var(--shadow-elegant)] transition-all cursor-pointer">
-                        <CardContent className="p-6 text-center">
-                            <Building2 className="w-8 h-8 text-info mx-auto mb-3" />
-                            <h3 className="font-medium mb-2">Company Database</h3>
-                            <p className="text-sm text-muted-foreground mb-4">Explore opportunities and company profiles</p>
-                            <Button variant="outline" size="sm">View Companies</Button>
-                        </CardContent>
-                    </Card>
                 </div>
             </div>
         </div>

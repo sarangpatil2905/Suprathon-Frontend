@@ -1,0 +1,33 @@
+.custom-calendar {
+  width: 100%;
+  border: none;
+}
+
+.react-calendar__tile {
+  height: 80px;
+  padding: 0.25rem;
+  vertical-align: top;
+  position: relative;
+  border-radius: 0.5rem;
+}
+
+.react-calendar__tile--now {
+  background-color: #f0f4ff !important;
+  border-radius: 0.5rem;
+}
+
+.react-calendar__tile--active {
+  background-color: #dbeafe !important;
+  color: #1e3a8a;
+  border-radius: 0.5rem;
+}
+
+.react-calendar__month-view__days__day--weekend {
+  color: #ef4444;
+}
+
+.has-event {
+  background-color: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+}
