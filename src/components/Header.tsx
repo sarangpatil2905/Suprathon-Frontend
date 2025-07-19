@@ -39,6 +39,11 @@ const Header = () => {
           {/* CTA Buttons */}
           {!isAuthPage && (
             <div className="hidden md:flex items-center space-x-3">
+              <Link to="/dashboard">
+                <Button variant="ghost" size="sm" className="rounded-2xl">
+                  DashBoard
+                </Button>
+              </Link>
               <Link to="/login">
                 <Button variant="ghost" size="sm" className="rounded-2xl">
                   Login

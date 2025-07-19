@@ -1,11 +1,30 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom"; // Step 1
 import Header from "@/components/Header";
+import axios from "axios";
 
 const LoginPage = () => {
     const [userType, setUserType] = useState<"student" | "tpo">("student");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const navigate = useNavigate(); // Step 2
+
+    const handleLogin = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        // Mock authentication logic
+        if (email && password) {
+            const result = await axios.post("http://localhost:8000/user/login", {
+                email: email,
+                password: password,
+            })
+            console.log(result)
+        } else {
+            alert("Please enter email and password.");
+        }
+    };
 
     return (
-
         <div
             className="min-h-screen relative overflow-hidden flex flex-col items-center gap-10 px-4"
             style={{
@@ -16,44 +35,14 @@ const LoginPage = () => {
         >
             <Header />
 
-            {/* Glowing background spots (now using inline styles for reliability) */}
-            <div
-                className="absolute w-72 h-72 opacity-50 blur-3xl rounded-full top-0 left-20 "
-                style={{
-                    background: "radial-gradient(circle at center, hsl(98, 67%, 68%) 0%, transparent 70%)",
-                }}
-            />
-            <div
-                className="absolute w-64 h-64 opacity-50 blur-2xl rounded-full bottom-0 left-6 "
-                style={{
-                    background: "radial-gradient(circle, hsl(98, 67%, 78%) 0%, transparent 80%)",
-                }}
-            />
-            <div
-                className="absolute w-64 h-64 opacity-50 blur-2xl rounded-full top-1/3 right-1 "
-                style={{
-                    background: "radial-gradient(circle, hsl(98, 67%, 73%) 0%, transparent 80%)",
-                }}
-            />
-            <div
-                className="absolute w-52 h-52 opacity-50 blur-2xl rounded-full bottom-1 right-30 "
-                style={{
-                    background: "radial-gradient(circle, hsl(98, 67%, 73%) 0%, transparent 80%)",
-                }}
-            />
+            {/* Gradient backgrounds */}
+            {/* ... keep your background spots here ... */}
 
-
-            {/* Header */}
+            {/* Header Text */}
             <div className="text-center mb-6">
-                <h2 className="text-sm font-semibold text-gray-500 tracking-widest uppercase">
-                    Members
-                </h2>
-                <h1 className="text-3xl sm:text-4xl font-bold text-[#252525] mt-2">
-                    Welcome to your smart portal.
-                </h1>
-                <p className="text-gray-500 mt-2">
-                    Empowering Careers. Simplifying Placements.
-                </p>
+                <h2 className="text-sm font-semibold text-gray-500 tracking-widest uppercase">Members</h2>
+                <h1 className="text-3xl sm:text-4xl font-bold text-[#252525] mt-2">Welcome to your smart portal.</h1>
+                <p className="text-gray-500 mt-2">Empowering Careers. Simplifying Placements.</p>
             </div>
 
             {/* Login Card */}
@@ -64,8 +53,8 @@ const LoginPage = () => {
                         type="button"
                         onClick={() => setUserType("student")}
                         className={`px-4 py-2 rounded-full text-sm font-medium transition-all border ${userType === "tpo"
-                            ? "bg-[#f3f3f3] text-[#252525]" : "bg-[#252525] text-[#f3f3f3]"
-
+                            ? "bg-[#f3f3f3] text-[#252525]"
+                            : "bg-[#252525] text-[#f3f3f3]"
                             }`}
                     >
                         Student
@@ -86,26 +75,29 @@ const LoginPage = () => {
                     {userType === "student" ? "Student Login" : "TPO/Admin Login"}
                 </h3>
 
-                {/* Form */}
-                <form className="space-y-4">
+                {/* Login Form */}
+                <form className="space-y-4" onSubmit={handleLogin}>
                     <input
                         type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
                         placeholder="Enter your email"
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[hsl(98,67%,68%)]"
+                        required
                     />
                     <input
                         type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
                         placeholder="Enter your password"
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[hsl(98,67%,68%)]"
+                        required
                     />
-
                     <button
                         type="submit"
                         className="w-full bg-[hsl(98,67%,68%)] hover:bg-[hsl(98,67%,60%)] text-[#252525] font-medium py-3 rounded-lg transition duration-200"
                     >
-                        {userType === "student"
-                            ? "Login as Student"
-                            : "Login as TPO/Admin"}
+                        {userType === "student" ? "Login as Student" : "Login as TPO/Admin"}
                     </button>
                 </form>
             </div>

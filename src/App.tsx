@@ -7,6 +7,8 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/LoginPage";
 import Signup from "./pages/SignupPage";
+import Dashboard from "./pages/StudentDashboard";
+import { UserProvider } from "@/context/usercontext";
 
 const queryClient = new QueryClient();
 
@@ -20,7 +22,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/login" element={<Login />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="*" element={<NotFound />} />
 
         </Routes>
