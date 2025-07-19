@@ -10,6 +10,9 @@ import Signup from "./pages/SignupPage";
 import Dashboard from "./pages/StudentDashboard";
 import Companies from "./pages/Companies";
 import PlacementStats from "./pages/PlacementStats";
+import Admin from "./pages/Admin";
+import AdminCompanies from "./pages/CompaniesAdmin";
+import AcceptAdmin from "./pages/AcceptAdmin";
 
 const queryClient = new QueryClient();
 
@@ -26,6 +29,9 @@ const App = () => (
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path='/companies' element={<Companies />} />
           <Route path='/placement-stats' element={<PlacementStats />} />
+          <Route path='/admin' element={<Admin />} />
+          <Route path='/companies-admin' element={<AdminCompanies />} />
+          <Route path='/accept-admin/:companyId' element={<AcceptAdmin />} />
           <Route path="*" element={<NotFound />} />
 
         </Routes>

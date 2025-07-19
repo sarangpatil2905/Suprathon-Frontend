@@ -37,11 +37,13 @@ const LoginPage = () => {
             if (res.status === 200 && res.data.user) {
                 const user = res.data.user;
 
-                // Set user data in context and localStorage
                 setUserData(user);
                 localStorage.setItem("userData", JSON.stringify(user));
 
-                navigate("/dashboard");
+                if (user.userType == 'student')
+                    navigate("/dashboard");
+                else
+                    navigate('/admin');
             } else {
                 alert("Invalid login response.");
             }
@@ -95,32 +97,8 @@ const LoginPage = () => {
 
             {/* Login Card */}
             <div className="w-full max-w-md bg-white border border-gray-200 rounded-2xl shadow-md p-8">
-                {/* Toggle Buttons */}
-                <div className="flex justify-center gap-4 mb-6">
-                    <button
-                        type="button"
-                        onClick={() => setUserType("student")}
-                        className={`px-4 py-2 rounded-full text-sm font-medium transition-all border ${userType === "tpo"
-                            ? "bg-[#f3f3f3] text-[#252525]"
-                            : "bg-[#252525] text-[#f3f3f3]"
-                            }`}
-                    >
-                        Student
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => setUserType("tpo")}
-                        className={`px-4 py-2 rounded-full text-sm font-medium transition-all border ${userType === "tpo"
-                            ? "bg-[#252525] text-[#f3f3f3]"
-                            : "bg-[#f3f3f3] text-[#252525]"
-                            }`}
-                    >
-                        TPO / Admin
-                    </button>
-                </div>
-
                 <h3 className="text-center text-lg font-semibold text-[#252525] mb-6">
-                    {userType === "student" ? "Student Login" : "TPO/Admin Login"}
+                    Login
                 </h3>
 
                 {/* Login Form */}
