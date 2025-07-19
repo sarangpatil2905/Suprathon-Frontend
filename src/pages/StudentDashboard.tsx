@@ -32,41 +32,63 @@ interface StudentData {
     cgpa: number;
 }
 
+interface Application {
+    _id: string;
+    companyName: string;
+    role?: string;
+    status: string;
+    createdAt: string;
+    userCgpa: number;
+    companyId: string;
+    companyYear: number;
+    companyEligibilityCgpa: number;
+    companyPackage: { componentName: string; amount: number }[];
+    companySchedule: { eventName: string; date: string; description: string; _id: string }[];
+}
+
 interface Interview {
     company: string;
     role: string;
     date: string;
-    time: string;
-    type: string;
+    time?: string;
+    type?: string;
     status: string;
-    round: string;
-}
-
-interface StudentDashboardProps {
-    userData: StudentData;
+    round?: string;
 }
 
 const StudentDashboard = () => {
     const { userData } = useUser();
-    const [myApplications, setMyApplications] = useState([]);
+    const navigate = useNavigate();
+    const [myApplications, setMyApplications] = useState<Application[]>([]);
     const [companies, setCompanies] = useState([]);
-    const [upcomingInterviews, setUpcomingInterviews] = useState<Interview[]>([]);
     const [weekOffset, setWeekOffset] = useState(0);
+    const [skills, setSkills] = useState([]);
     const maxOffset = 4; // 4 weeks before and after current week
 
-    // Temporary mock data with rounds
-    const tempInterviews: Interview[] = [
-        { company: "Google", role: "SDE", date: "2025-07-20", time: "10:00", type: "Technical", status: "confirmed", round: "OA" },
-        { company: "Microsoft", role: "PM", date: "2025-07-22", time: "14:00", type: "HR", status: "pending", round: "DSA" },
-        { company: "Amazon", role: "SDE-1", date: "2025-07-25", time: "09:00", type: "Technical", status: "shortlisted", round: "Technical" },
-        { company: "Facebook", role: "Intern", date: "2025-07-28", time: "15:00", type: "Interview", status: "under_review", round: "HR" },
-        { company: "Tesla", role: "Engineer", date: "2025-08-01", time: "11:00", type: "Technical", status: "confirmed", round: "DSA" },
-    ];
+    useEffect(() => {
+        // Redirect based on user type on mount or userData change
+        if (userData) {
+            if (userData.userType === "student") {
+                // Stay on /dashboard (no redirect needed if already here)
+            } else {
+                navigate("/admin"); // Redirect to admin for non-student roles (e.g., tpo)
+            }
+        }
+    }, [userData, navigate]);
+
+    const fetchMySkills = async () => {
+        try {
+            const response = await axios.get('http://localhost:8000/user/getUserSkills', { withCredentials: true });
+            setSkills(response.data.data.technicalSkills);
+        } catch (err) {
+            console.log(err.message);
+        }
+    };
 
     const fetchMyApplications = async () => {
         try {
             const response = await axios.get('http://localhost:8000/application/getAllApplicationsByUser', { withCredentials: true });
-            setMyApplications(response.data.applications);
+            setMyApplications(response.data.applications || []);
         } catch (err) {
             console.log(err.message);
         }
@@ -81,29 +103,23 @@ const StudentDashboard = () => {
         }
     };
 
-    const fetchUpcomingInterviews = async () => {
-        try {
-            const response = await axios.get('http://localhost:8000/interviews/getUpcomingInterviews', { withCredentials: true });
-            setUpcomingInterviews(response.data.interviews || tempInterviews); // Use temp data if API fails
-        } catch (err) {
-            console.log(err.message);
-            setUpcomingInterviews(tempInterviews); // Fallback to temp data
-        }
-    };
-
     useEffect(() => {
         fetchMyApplications();
         fetchCompanies();
-        fetchUpcomingInterviews();
+        fetchMySkills();
+        console.log(myApplications);
     }, []);
 
     if (!userData) return <div className="bg-transparent text-[#252525]">Loading...</div>;
 
+    // Only render student dashboard if user is a student
+    if (userData.userType !== "student") return null; // Avoid rendering for non-students
+
     const applicationStats = {
-        totalApplications: 12,
-        pendingApplications: 5,
-        interviewsScheduled: 3,
-        offersReceived: 2
+        totalApplications: myApplications.length,
+        pendingApplications: myApplications.filter(app => app.status === "pending" || app.status === "under_review").length,
+        interviewsScheduled: myApplications.filter(app => app.status === "shortlisted" || app.status === "confirmed").length,
+        offersReceived: myApplications.filter(app => app.status === "accepted").length
     };
 
     const getStatusColor = (status: string) => {
@@ -122,22 +138,37 @@ const StudentDashboard = () => {
     };
 
     const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    const today = new Date('2025-07-19T21:45:00+05:30'); // Current date and time: 09:45 PM IST
+    const today = new Date('2025-07-20T01:47:00+05:30'); // Current date and time: 01:47 AM IST
     const startOfWeek = new Date(today);
     startOfWeek.setDate(today.getDate() - today.getDay() + weekOffset * 7);
     const weekDays = Array.from({ length: 28 }, (_, i) => {
         const date = new Date(startOfWeek);
         date.setDate(startOfWeek.getDate() + i);
+        const interviews = myApplications
+            .filter(app => app.status === "accepted") // Only include accepted applications
+            .flatMap(app =>
+                app.companySchedule.map(schedule => ({
+                    company: app.companyName,
+                    role: app.role || "N/A",
+                    date: schedule.date.split('T')[0],
+                    time: schedule.date.split('T')[1].split('.')[0], // Extract time (e.g., "10:00:00")
+                    type: schedule.eventName, // Use eventName as type
+                    status: app.status,
+                    round: schedule.eventName // Map eventName to round
+                }))
+            )
+            .filter(interview => {
+                const interviewDate = new Date(interview.date + 'T' + interview.time);
+                return interviewDate.toDateString() === date.toDateString();
+            });
         return {
             day: days[date.getDay()],
             date: date.getDate(),
             month: date.toLocaleString('default', { month: 'short' }),
             fullDate: date.toISOString().split('T')[0],
             isPast: date < today,
-            interviews: upcomingInterviews.filter(interview => {
-                const interviewDate = new Date(`${interview.date}T${interview.time}`);
-                return interviewDate.toDateString() === date.toDateString();
-            })
+            hasEvents: interviews.length > 0, // Flag for days with events
+            interviews
         };
     });
 
@@ -213,7 +244,7 @@ const StudentDashboard = () => {
                                     {/* Skills Section */}
                                     <div className="bg-transparent">
                                         <div className="flex flex-wrap gap-2 bg-transparent">
-                                            {(userData.skills || ["React", "Node.js", "DSA", "SQL", "Mongo"]).map((skill, index) => (
+                                            {(skills || ["React", "Node.js", "DSA", "SQL", "Mongo"]).map((skill, index) => (
                                                 <span
                                                     key={index}
                                                     className="w-19 inline-block bg-[#9FE477]/40 text-[#252525] text-sm font-medium px-3 py-1 rounded-full "
@@ -307,7 +338,7 @@ const StudentDashboard = () => {
                                     {weekDays.map((day, index) => (
                                         <div
                                             key={index}
-                                            className={`border p-2 h-24 overflow-y-auto ${day.isPast ? 'bg-[#f5f5f5]' : 'bg-transparent'}`}
+                                            className={`border p-2 h-24 overflow-y-auto ${day.isPast ? 'bg-[#f5f5f5]' : 'bg-transparent'} ${day.hasEvents ? 'bg-[#e6f3e1]' : ''}`}
                                         >
                                             <div className="text-sm text-[#757575] font-medium bg-transparent">{day.date} {day.month}</div>
                                             {day.interviews.map((interview, i) => (
@@ -324,7 +355,6 @@ const StudentDashboard = () => {
                 </div>
             </div>
         </div>
-
     );
 };
 

@@ -52,6 +52,7 @@ const LoginPage = () => {
             alert("Login failed: " + (err?.response?.data?.message || "Check your credentials"));
         }
     };
+
     return (
         <div
             className="min-h-screen relative overflow-hidden flex flex-col items-center gap-10 px-4"
@@ -63,36 +64,11 @@ const LoginPage = () => {
         >
             <Header />
 
-            {/* Glowing background spots (now using inline styles for reliability) */}
-            <div
-                className="absolute w-72 h-72 opacity-50 blur-3xl rounded-full top-0 left-20 "
-                style={{
-                    background: "radial-gradient(circle at center, hsl(98, 67%, 68%) 0%, transparent 70%)",
-                }}
-            />
-            <div
-                className="absolute w-64 h-64 opacity-50 blur-2xl rounded-full bottom-0 left-6 "
-                style={{
-                    background: "radial-gradient(circle, hsl(98, 67%, 78%) 0%, transparent 80%)",
-                }}
-            />
-            <div
-                className="absolute w-64 h-64 opacity-50 blur-2xl rounded-full top-1/3 right-1 "
-                style={{
-                    background: "radial-gradient(circle, hsl(98, 67%, 73%) 0%, transparent 80%)",
-                }}
-            />
-
+            {/* Header Text */}
             <div className="text-center mb-6">
-                <h2 className="text-sm font-semibold text-gray-500 tracking-widest uppercase">
-                    Members
-                </h2>
-                <h1 className="text-3xl sm:text-4xl font-bold text-[#252525] mt-2">
-                    Welcome to your smart portal.
-                </h1>
-                <p className="text-gray-500 mt-2">
-                    Empowering Careers. Simplifying Placements.
-                </p>
+                <h2 className="text-sm font-semibold text-gray-500 tracking-widest uppercase">Members</h2>
+                <h1 className="text-3xl sm:text-4xl font-bold text-[#252525] mt-2">Welcome to your smart portal.</h1>
+                <p className="text-gray-500 mt-2">Empowering Careers. Simplifying Placements.</p>
             </div>
 
             {/* Login Card */}
@@ -123,7 +99,7 @@ const LoginPage = () => {
                         type="submit"
                         className="w-full bg-[hsl(98,67%,68%)] hover:bg-[hsl(98,67%,60%)] text-[#252525] font-medium py-3 rounded-lg transition duration-200"
                     >
-                        {userType === "student" ? "Login as Student" : "Login as TPO/Admin"}
+                        Login
                     </button>
                 </form>
             </div>

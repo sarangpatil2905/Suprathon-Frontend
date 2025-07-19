@@ -32,6 +32,7 @@ import {
     GraduationCap,
     TrendingDown
 } from "lucide-react";
+import { useUser } from "@/context/UserContext";
 
 interface PackageComponent {
     total: number;
@@ -73,6 +74,7 @@ interface PlacementStats {
 const CHART_COLORS = ['#9FE477', '#7BC859', '#5BAD3B', '#3E8F27', '#2D6B1D'];
 
 const PlacementStats: React.FC = () => {
+    const { userData } = useUser();
     const [stats, setStats] = useState<PlacementStats | null>(null);
     const [error, setError] = useState<string>("");
 

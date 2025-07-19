@@ -38,7 +38,7 @@ const Navbar = () => {
                     )}
                     {!isAuthPage && (
                         <div className="hidden md:flex items-center space-x-3">
-                            <Link to="/dashboard">
+                            <Link to="/login">
                                 <Button size="sm" className="bg-primary rounded-2xl hover:opacity-90">
                                     Logout
                                 </Button>
