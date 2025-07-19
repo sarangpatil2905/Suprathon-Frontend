@@ -57,11 +57,36 @@ const LoginPage = () => {
         <div
             className="min-h-screen relative overflow-hidden flex flex-col items-center gap-10 px-4"
             style={{
-                backgroundColor: "hsl(0, 0%, 98%)",
+                backgroundColor: "transparent",
                 backgroundImage:
                     "repeating-linear-gradient(to right, #e5e7eb 0px, #e5e7eb 1px, transparent 0px, transparent 140px)",
             }}
         >
+            <div
+                className="fixed w-72 h-72 opacity-50 blur-3xl rounded-full top-0 left-1/2 z-[-1]"
+                style={{
+                    background: "radial-gradient(circle at center, hsl(98, 67%, 68%) 0%, transparent 70%)",
+                }}
+            />
+            <div
+                className="fixed w-64 h-64 opacity-50 blur-2xl rounded-full bottom-0 left-6 z-[-1]"
+                style={{
+                    background: "radial-gradient(circle, hsl(98, 67%, 78%) 0%, transparent 80%)",
+                }}
+            />
+            <div
+                className="fixed w-64 h-64 opacity-50 blur-2xl rounded-full top-1/3 left-1/4 z-[-1]"
+                style={{
+                    background: "radial-gradient(circle, hsl(98, 67%, 73%) 0%, transparent 80%)",
+                }}
+            />
+            <div
+                className="fixed w-80 h-80 opacity-50 blur-3xl rounded-full bottom-1/4 right-20 z-[-1]"
+                style={{
+                    background: "radial-gradient(circle at center, hsl(98, 67%, 70%) 0%, transparent 75%)",
+                }}
+            />
+
             <Header />
 
             {/* Header Text */}

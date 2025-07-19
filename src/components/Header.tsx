@@ -4,7 +4,8 @@ import { Link, useLocation } from "react-router-dom";
 
 const Header = () => {
   const location = useLocation();
-  const isAuthPage = location.pathname === "/login" || location.pathname === "/signup";
+  const isLoginPage = location.pathname === "/login"; // Check for login page
+  const isSignupPage = location.pathname === "/signup"; // Check for signup page
 
   return (
     <header className="w-full bg-card/80 backdrop-blur-sm border-b border-border/50 sticky top-0 z-50">
@@ -18,11 +19,10 @@ const Header = () => {
             <Link to="/">
               <span className="text-xl font-bold text-foreground">PlacementPro</span>
             </Link>
-
           </div>
 
           {/* Navigation */}
-          {!isAuthPage && (
+          {!isLoginPage && !isSignupPage && (
             <nav className="hidden md:flex items-center space-x-8">
               <a href="#features" className="text-muted-foreground hover:text-foreground transition-colors">
                 Features
@@ -40,13 +40,15 @@ const Header = () => {
           )}
 
           {/* CTA Buttons */}
-          {!isAuthPage && (
+          {!isSignupPage && (
             <div className="hidden md:flex items-center space-x-3">
-              <Link to="/login">
-                <Button variant="ghost" size="sm" className="rounded-2xl">
-                  Login
-                </Button>
-              </Link>
+              {!isLoginPage && (
+                <Link to="/login">
+                  <Button variant="ghost" size="sm" className="rounded-2xl">
+                    Login
+                  </Button>
+                </Link>
+              )}
               <Link to="/signup">
                 <Button size="sm" className="bg-primary rounded-2xl hover:opacity-90">
                   SignUp
@@ -56,7 +58,7 @@ const Header = () => {
           )}
 
           {/* Mobile Menu */}
-          {!isAuthPage && (
+          {!isLoginPage && !isSignupPage && (
             <Button variant="ghost" size="icon" className="md:hidden">
               <Menu className="w-5 h-5" />
             </Button>
