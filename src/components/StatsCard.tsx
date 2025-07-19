@@ -16,7 +16,7 @@ export const StatsCard = ({ title, value, icon: Icon, trend, className }: StatsC
 
   return (
     <Card className={cn(
-      "bg-gradient-to-br from-card to-card/80 border-0 shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-elegant)] transition-all duration-300 hover:scale-[1.02]",
+      " bg-white/40 border-border/80 shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-elegant)] transition-all duration-300 hover:scale-[1.02]",
       className
     )}>
       <CardContent className="p-6">
