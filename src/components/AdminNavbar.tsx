@@ -1,10 +1,13 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { GraduationCap, Menu } from "lucide-react";
+import { GraduationCap, Menu, X } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
 const AdminNavbar = () => {
     const location = useLocation();
     const isAuthPage = location.pathname === "/login" || location.pathname === "/signup";
+
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     return (
         <header className="w-full bg-card/80 backdrop-blur-sm border-b border-border/50 sticky top-0 z-50">
@@ -20,18 +23,19 @@ const AdminNavbar = () => {
                         </Link>
                     </div>
 
-                    {/* Navigation */}
+                    {/* Desktop Navigation */}
                     {!isAuthPage && (
                         <nav className="hidden md:flex items-center space-x-8">
-                            <a href="/admin" className="text-muted-foreground hover:text-foreground transition-colors">
+                            <Link to="/admin" className="text-muted-foreground hover:text-foreground transition-colors">
                                 Dashboard
-                            </a>
-                            <a href="/companies-admin" className="text-muted-foreground hover:text-foreground transition-colors">
+                            </Link>
+                            <Link to="/companies-admin" className="text-muted-foreground hover:text-foreground transition-colors">
                                 Companies
-                            </a>
+                            </Link>
                         </nav>
-
                     )}
+
+                    {/* Desktop Logout */}
                     {!isAuthPage && (
                         <div className="hidden md:flex items-center space-x-3">
                             <Link to="/login">
@@ -39,18 +43,39 @@ const AdminNavbar = () => {
                                     Logout
                                 </Button>
                             </Link>
-
                         </div>
                     )}
 
-                    {/* Mobile Menu */}
+                    {/* Mobile Menu Toggle */}
                     {!isAuthPage && (
-                        <Button variant="ghost" size="icon" className="md:hidden">
-                            <Menu className="w-5 h-5" />
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="md:hidden"
+                            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                        >
+                            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
                         </Button>
                     )}
                 </div>
             </div>
+
+            {/* Mobile Dropdown Menu */}
+            {mobileMenuOpen && !isAuthPage && (
+                <div className="md:hidden px-4 pb-4 pt-2 bg-background border-t border-border">
+                    <nav className="flex flex-col space-y-3">
+                        <Link to="/admin" className="text-muted-foreground hover:text-foreground">
+                            Dashboard
+                        </Link>
+                        <Link to="/companies-admin" className="text-muted-foreground hover:text-foreground">
+                            Companies
+                        </Link>
+                        <Link to="/login">
+                            <Button className="w-full bg-primary mt-3 hover:opacity-90">Logout</Button>
+                        </Link>
+                    </nav>
+                </div>
+            )}
         </header>
     );
 };

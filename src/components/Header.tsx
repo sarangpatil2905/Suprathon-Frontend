@@ -1,11 +1,14 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { GraduationCap, Menu } from "lucide-react";
+import { GraduationCap, Menu, X } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
 const Header = () => {
   const location = useLocation();
-  const isLoginPage = location.pathname === "/login"; // Check for login page
-  const isSignupPage = location.pathname === "/signup"; // Check for signup page
+  const isLoginPage = location.pathname === "/login";
+  const isSignupPage = location.pathname === "/signup";
+
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
     <header className="w-full bg-card/80 backdrop-blur-sm border-b border-border/50 sticky top-0 z-50">
@@ -21,21 +24,13 @@ const Header = () => {
             </Link>
           </div>
 
-          {/* Navigation */}
+          {/* Desktop Nav */}
           {!isLoginPage && !isSignupPage && (
             <nav className="hidden md:flex items-center space-x-8">
-              <a href="#features" className="text-muted-foreground hover:text-foreground transition-colors">
-                Features
-              </a>
-              <a href="#analytics" className="text-muted-foreground hover:text-foreground transition-colors">
-                Analytics
-              </a>
-              <a href="#benefits" className="text-muted-foreground hover:text-foreground transition-colors">
-                Benefits
-              </a>
-              <a href="#contact" className="text-muted-foreground hover:text-foreground transition-colors">
-                Contact
-              </a>
+              <a href="#features" className="text-muted-foreground hover:text-foreground transition-colors">Features</a>
+              <a href="#analytics" className="text-muted-foreground hover:text-foreground transition-colors">Analytics</a>
+              <a href="#benefits" className="text-muted-foreground hover:text-foreground transition-colors">Benefits</a>
+              <a href="#contact" className="text-muted-foreground hover:text-foreground transition-colors">Contact</a>
             </nav>
           )}
 
@@ -44,27 +39,46 @@ const Header = () => {
             <div className="hidden md:flex items-center space-x-3">
               {!isLoginPage && (
                 <Link to="/login">
-                  <Button variant="ghost" size="sm" className="rounded-2xl">
-                    Login
-                  </Button>
+                  <Button variant="ghost" size="sm" className="rounded-2xl">Login</Button>
                 </Link>
               )}
               <Link to="/signup">
-                <Button size="sm" className="bg-primary rounded-2xl hover:opacity-90">
-                  SignUp
-                </Button>
+                <Button size="sm" className="bg-primary rounded-2xl hover:opacity-90">SignUp</Button>
               </Link>
             </div>
           )}
 
-          {/* Mobile Menu */}
+          {/* Mobile Menu Toggle */}
           {!isLoginPage && !isSignupPage && (
-            <Button variant="ghost" size="icon" className="md:hidden">
-              <Menu className="w-5 h-5" />
+            <Button
+              variant="ghost"
+              size="icon"
+              className="md:hidden"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </Button>
           )}
         </div>
       </div>
+
+      {/* Mobile Menu Dropdown */}
+      {mobileMenuOpen && (
+        <div className="md:hidden px-4 pb-4 pt-2 bg-background border-t border-border">
+          <nav className="flex flex-col space-y-3">
+            <div className="flex flex-col space-y-2 mt-4">
+              {!isLoginPage && (
+                <Link to="/login">
+                  <Button variant="outline" className="w-full">Login</Button>
+                </Link>
+              )}
+              <Link to="/signup">
+                <Button className="w-full bg-primary hover:opacity-90">SignUp</Button>
+              </Link>
+            </div>
+          </nav>
+        </div>
+      )}
     </header>
   );
 };
