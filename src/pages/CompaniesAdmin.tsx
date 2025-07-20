@@ -23,7 +23,9 @@ import {
     Mail,
     GraduationCap,
     CalendarDays,
-    Check
+    Check,
+    ChevronLeft,
+    ChevronRight
 } from "lucide-react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -54,6 +56,20 @@ interface Company {
     deadline: string | Date;
 }
 
+interface Interview {
+    company: string;
+    round: string;
+    status: string;
+}
+
+interface CalendarDay {
+    date: number;
+    month: string;
+    isPast: boolean;
+    hasEvents: boolean;
+    interviews: Interview[];
+}
+
 const AdminCompanies = () => {
     const navigate = useNavigate();
     const [companies, setCompanies] = useState<Company[]>([]);
@@ -61,6 +77,7 @@ const AdminCompanies = () => {
     const [error, setError] = useState<string | null>(null);
     const [updateModalOpen, setUpdateModalOpen] = useState(false);
     const [addModalOpen, setAddModalOpen] = useState(false);
+    const [calendarModalOpen, setCalendarModalOpen] = useState(false);
     const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
     const [activeSection, setActiveSection] = useState<'basic' | 'schedule' | 'package'>('basic');
     const [updateForm, setUpdateForm] = useState({
@@ -77,6 +94,8 @@ const AdminCompanies = () => {
     const [expandedSchedule, setExpandedSchedule] = useState<number[]>([]);
     const [expandedPackage, setExpandedPackage] = useState<number[]>([]);
     const [packageModalStates, setPackageModalStates] = useState<{ [key: string]: boolean }>({});
+    const [weekOffset, setWeekOffset] = useState(0);
+    const maxOffset = 4;
 
     const fetchCompanies = async () => {
         setLoading(true);
@@ -87,7 +106,7 @@ const AdminCompanies = () => {
             });
             const companies = response.data.data.companies || [];
             const sortedCompanies = [...companies].sort((a, b) => {
-                const now = new Date("2025-07-19T16:27:00Z");
+                const now = new Date();
                 const deadlineA = new Date(a.deadline);
                 const deadlineB = new Date(b.deadline);
                 const isExpiredA = isNaN(deadlineA.getTime()) ? false : deadlineA < now;
@@ -138,6 +157,20 @@ const AdminCompanies = () => {
     const handleUpdateSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!selectedCompany) return;
+
+        // Basic input validation
+        if (!updateForm.name.trim()) {
+            setUpdateMessage({ text: "Company name is required.", isError: true });
+            return;
+        }
+        if (!updateForm.year || isNaN(parseInt(updateForm.year)) || parseInt(updateForm.year) < 2000) {
+            setUpdateMessage({ text: "Valid academic year is required.", isError: true });
+            return;
+        }
+        if (!updateForm.eligibilityCgpa || isNaN(parseFloat(updateForm.eligibilityCgpa)) || parseFloat(updateForm.eligibilityCgpa) < 0) {
+            setUpdateMessage({ text: "Valid CGPA is required.", isError: true });
+            return;
+        }
 
         try {
             const updates = {
@@ -318,6 +351,61 @@ const AdminCompanies = () => {
         }
     };
 
+    // Calendar logic
+    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+    const getFourWeeksDays = (offset: number) => {
+        const today = new Date();
+        today.setDate(today.getDate() + offset * 7);
+        const startOfWeek = new Date(today);
+        startOfWeek.setDate(today.getDate() - today.getDay() + 1);
+
+        const fourWeeksDays: CalendarDay[] = [];
+        for (let i = 0; i < 28; i++) {
+            const day = new Date(startOfWeek);
+            day.setDate(startOfWeek.getDate() + i);
+            const interviews = companies
+                .flatMap(company => company.schedule)
+                .filter(event => {
+                    const eventDate = new Date(event.date);
+                    return eventDate.toDateString() === day.toDateString();
+                })
+                .map(event => ({
+                    company: companies.find(c => c.schedule.includes(event))?.name || '',
+                    round: event.eventName,
+                    status: 'scheduled'
+                }));
+
+            fourWeeksDays.push({
+                date: day.getDate(),
+                month: day.toLocaleString('en-IN', { month: 'short' }),
+                isPast: day < new Date(new Date().setHours(0, 0, 0, 0)),
+                hasEvents: interviews.length > 0,
+                interviews
+            });
+        }
+        return fourWeeksDays;
+    };
+
+    const formatDateRange = () => {
+        const today = new Date();
+        today.setDate(today.getDate() + weekOffset * 7);
+        const startOfWeek = new Date(today);
+        startOfWeek.setDate(today.getDate() - today.getDay() + 1);
+        const endOfWeek = new Date(startOfWeek);
+        endOfWeek.setDate(startOfWeek.getDate() + 6);
+
+        return `${startOfWeek.toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })} - ${endOfWeek.toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+    };
+
+    const handlePreviousWeek = () => {
+        setWeekOffset(prev => prev - 1);
+    };
+
+    const handleNextWeek = () => {
+        setWeekOffset(prev => prev + 1);
+    };
+
     return (
         <div className="min-h-screen bg-transparent text-gray-200 relative overflow-hidden">
             {/* Background Blobs */}
@@ -355,12 +443,20 @@ const AdminCompanies = () => {
                         </h1>
                         <p className="text-[#616161] mt-1">View, add, and update company details</p>
                     </div>
-                    <Button
-                        onClick={() => setAddModalOpen(true)}
-                        className="bg-[#9FE477] hover:bg-[#7AC142] text-[#252525] shadow-lg w-full md:w-auto"
-                    >
-                        <Plus className="w-5 h-5 mr-2" /> Add Company
-                    </Button>
+                    <div className="flex gap-4 w-full md:w-auto">
+                        <Button
+                            onClick={() => setAddModalOpen(true)}
+                            className="bg-[#9FE477] hover:bg-[#7AC142] text-[#252525] shadow-lg w-full md:w-auto"
+                        >
+                            <Plus className="w-5 h-5 mr-2" /> Add Company
+                        </Button>
+                        <Button
+                            onClick={() => setCalendarModalOpen(true)}
+                            className="bg-[#9FE477] hover:bg-[#7AC142] text-[#252525] shadow-lg w-full md:w-auto"
+                        >
+                            <Calendar className="w-5 h-5 mr-2" /> Calendar
+                        </Button>
+                    </div>
                 </div>
 
                 {/* Error or Loading Message */}
@@ -469,10 +565,10 @@ const AdminCompanies = () => {
                                 </Button>
                                 <Button
                                     onClick={() => { navigate(`/accept-admin/${company._id}`) }}
-                                    disabled={isCompleted(company.schedule[company.schedule.length - 1].date)}
-                                    className={`w-full ${isCompleted(company.schedule[company.schedule.length - 1].date) ? 'bg-[#9FE477] hover:bg-[#7AC142] text-[#252525]' : 'bg-[#252525] hover:bg-[#9FE477]/80 text-[#f3f3f3] hover:text-[#252525]'}`}
+                                    disabled={isCompleted(company.schedule[company.schedule.length - 1]?.date)}
+                                    className={`w-full ${isCompleted(company.schedule[company.schedule.length - 1]?.date) ? 'bg-[#9FE477] hover:bg-[#7AC142] text-[#252525]' : 'bg-[#252525] hover:bg-[#9FE477]/80 text-[#f3f3f3] hover:text-[#252525]'}`}
                                 >
-                                    <Check className="w-4 h-4 mr-2" /> {isCompleted(company.schedule[company.schedule.length - 1].date) ? "Ongoing" : "Finalize Students"}
+                                    <Check className="w-4 h-4 mr-2" /> {isCompleted(company.schedule[company.schedule.length - 1]?.date) ? "Ongoing" : "Finalize Students"}
                                 </Button>
                             </CardContent>
 
@@ -515,377 +611,456 @@ const AdminCompanies = () => {
 
                 {/* Update Company Modal */}
                 {updateModalOpen && selectedCompany && (
-                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                        <Card className="bg-[#FAFAFA] border-0 w-full max-w-4xl max-h-[90vh] overflow-hidden shadow-2xl rounded-2xl">
-                            <CardHeader className="p-6 pb-4 bg-[#9FE477]/20">
-                                <CardTitle className="flex items-center gap-3 text-2xl text-[#252525]">
-                                    <Edit className="w-6 h-6 text-[#9FE477]" />
-                                    Update {selectedCompany.name}
-                                </CardTitle>
-                                <CardDescription className="text-[#616161]">
-                                    Modify company placement details
-                                </CardDescription>
-                            </CardHeader>
+                    <div className="fixed inset-0 mt-0 z-50">
+                        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                            <Card className="bg-[#FAFAFA] border-0 w-full max-w-4xl max-h-[90vh] overflow-hidden shadow-2xl rounded-2xl">
+                                <CardHeader className="p-6 pb-4 bg-[#9FE477]/20">
+                                    <CardTitle className="flex items-center gap-3 text-2xl text-[#252525]">
+                                        <Edit className="w-6 h-6 text-[#9FE477]" />
+                                        Update {selectedCompany.name}
+                                    </CardTitle>
+                                    <CardDescription className="text-[#616161]">
+                                        Modify company placement details
+                                    </CardDescription>
+                                </CardHeader>
 
-                            <div className="flex border-b bg-[#f5f5f5]">
-                                {(['basic', 'schedule', 'package'] as const).map((section) => (
-                                    <button
-                                        key={section}
-                                        onClick={() => setActiveSection(section)}
-                                        className={`flex-1 px-6 py-3 text-sm font-medium transition-colors ${activeSection === section
-                                            ? 'text-[#9FE477] border-b-2 border-[#9FE477] bg-[#FAFAFA]'
-                                            : 'text-[#616161] hover:text-[#252525]'
-                                            }`}
-                                    >
-                                        {section === 'basic' && 'Basic Info'}
-                                        {section === 'schedule' && `Schedule (${updateForm.schedule.length})`}
-                                        {section === 'package' && `Package (${updateForm.package.length})`}
-                                    </button>
-                                ))}
-                            </div>
+                                <div className="flex border-b bg-[#f5f5f5]">
+                                    {(['basic', 'schedule', 'package'] as const).map((section) => (
+                                        <button
+                                            key={section}
+                                            onClick={() => setActiveSection(section)}
+                                            className={`flex-1 px-6 py-3 text-sm font-medium transition-colors ${activeSection === section
+                                                ? 'text-[#9FE477] border-b-2 border-[#9FE477] bg-[#FAFAFA]'
+                                                : 'text-[#616161] hover:text-[#252525]'
+                                                }`}
+                                        >
+                                            {section === 'basic' && 'Basic Info'}
+                                            {section === 'schedule' && `Schedule (${updateForm.schedule.length})`}
+                                            {section === 'package' && `Package (${updateForm.package.length})`}
+                                        </button>
+                                    ))}
+                                </div>
 
-                            <CardContent className="p-6 overflow-y-auto max-h-[60vh]">
-                                <form onSubmit={handleUpdateSubmit} className="space-y-6">
-                                    {activeSection === 'basic' && (
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                            <div className="space-y-2">
-                                                <Label htmlFor="name" className="text-sm font-semibold text-[#252525]">
-                                                    Company Name
-                                                </Label>
-                                                <Input
-                                                    id="name"
-                                                    value={updateForm.name}
-                                                    onChange={(e) => setUpdateForm(prev => ({ ...prev, name: e.target.value }))}
-                                                    className="h-11 border-[#e0e0e0] focus:border-[#9FE477]"
-                                                />
-                                            </div>
-                                            <div className="space-y-2">
-                                                <Label htmlFor="year" className="text-sm font-semibold text-[#252525]">
-                                                    Academic Year
-                                                </Label>
-                                                <Input
-                                                    id="year"
-                                                    type="number"
-                                                    value={updateForm.year}
-                                                    onChange={(e) => setUpdateForm(prev => ({ ...prev, year: e.target.value }))}
-                                                    className="h-11 border-[#e0e0e0] focus:border-[#9FE477]"
-                                                />
-                                            </div>
-                                            <div className="space-y-2">
-                                                <Label htmlFor="eligibilityCgpa" className="text-sm font-semibold text-[#252525]">
-                                                    Minimum CGPA
-                                                </Label>
-                                                <Input
-                                                    id="eligibilityCgpa"
-                                                    type="number"
-                                                    step="0.1"
-                                                    value={updateForm.eligibilityCgpa}
-                                                    onChange={(e) => setUpdateForm(prev => ({ ...prev, eligibilityCgpa: e.target.value }))}
-                                                    className="h-11 border-[#e0e0e0] focus:border-[#9FE477]"
-                                                />
-                                            </div>
-                                            <div className="space-y-2">
-                                                <Label htmlFor="phone" className="text-sm font-semibold text-[#252525]">
-                                                    Contact Phone
-                                                </Label>
-                                                <Input
-                                                    id="phone"
-                                                    value={updateForm.phone}
-                                                    onChange={(e) => setUpdateForm(prev => ({ ...prev, phone: e.target.value }))}
-                                                    className="h-11 border-[#e0e0e0] focus:border-[#9FE477]"
-                                                />
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {activeSection === 'schedule' && (
-                                        <div className="space-y-4">
-                                            <div className="flex items-center justify-between">
-                                                <h3 className="text-lg font-semibold text-[#252525]">Event Schedule</h3>
-                                                <Button
-                                                    type="button"
-                                                    onClick={addScheduleEvent}
-                                                    className="bg-[#9FE477] hover:bg-[#7AC142] text-[#252525]"
-                                                >
-                                                    <Plus className="w-4 h-4 mr-2" /> Add Event
-                                                </Button>
-                                            </div>
-
-                                            <div className="space-y-3">
-                                                {updateForm.schedule.map((event, index) => (
-                                                    <Card key={index} className="border border-[#e0e0e0] bg-[#FAFAFA]">
-                                                        <div
-                                                            className="p-4 cursor-pointer hover:bg-[#f5f5f5] transition-colors"
-                                                            onClick={() => toggleScheduleExpansion(index)}
-                                                        >
-                                                            <div className="flex items-center justify-between">
-                                                                <div className="flex items-center gap-3">
-                                                                    <Calendar className="w-5 h-5 text-[#9FE477]" />
-                                                                    <div>
-                                                                        <p className="font-medium text-[#252525]">
-                                                                            {event.eventName || `Event ${index + 1}`}
-                                                                        </p>
-                                                                        {event.date && (
-                                                                            <p className="text-sm text-[#616161]">
-                                                                                {formatDate(event.date)}
-                                                                            </p>
-                                                                        )}
-                                                                    </div>
-                                                                </div>
-                                                                <div className="flex items-center gap-2">
-                                                                    <Button
-                                                                        type="button"
-                                                                        variant="ghost"
-                                                                        size="sm"
-                                                                        onClick={(e) => {
-                                                                            e.stopPropagation();
-                                                                            removeScheduleEvent(index);
-                                                                        }}
-                                                                        className="text-[#d32f2f] hover:text-[#b71c1c] hover:bg-[#ffebee]"
-                                                                    >
-                                                                        <Trash2 className="w-4 h-4" />
-                                                                    </Button>
-                                                                    {expandedSchedule.includes(index) ?
-                                                                        <ChevronUp className="w-5 h-5 text-[#616161]" /> :
-                                                                        <ChevronDown className="w-5 h-5 text-[#616161]" />
-                                                                    }
-                                                                </div>
-                                                            </div>
-                                                        </div>
-
-                                                        {expandedSchedule.includes(index) && (
-                                                            <div className="border-t border-[#e0e0e0] p-4 bg-[#f5f5f5] space-y-4">
-                                                                <div>
-                                                                    <Label className="text-sm font-medium text-[#252525]">Event Name</Label>
-                                                                    <Input
-                                                                        placeholder="e.g., Pre-placement Talk"
-                                                                        value={event.eventName}
-                                                                        onChange={(e) => updateScheduleEvent(index, "eventName", e.target.value)}
-                                                                        className="mt-1 border-[#e0e0e0] focus:border-[#9FE477]"
-                                                                    />
-                                                                </div>
-                                                                <div>
-                                                                    <Label className="text-sm font-medium text-[#252525]">Date & Time</Label>
-                                                                    <Input
-                                                                        type="datetime-local"
-                                                                        value={event.date}
-                                                                        onChange={(e) => updateScheduleEvent(index, "date", e.target.value)}
-                                                                        className="mt-1 border-[#e0e0e0] focus:border-[#9FE477]"
-                                                                    />
-                                                                </div>
-                                                                <div>
-                                                                    <Label className="text-sm font-medium text-[#252525]">Description</Label>
-                                                                    <Input
-                                                                        placeholder="Optional description"
-                                                                        value={event.description}
-                                                                        onChange={(e) => updateScheduleEvent(index, "description", e.target.value)}
-                                                                        className="mt-1 border-[#e0e0e0] focus:border-[#9FE477]"
-                                                                    />
-                                                                </div>
-                                                            </div>
-                                                        )}
-                                                    </Card>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {activeSection === 'package' && (
-                                        <div className="space-y-4">
-                                            <div className="flex items-center justify-between">
-                                                <div>
-                                                    <h3 className="text-lg font-semibold text-[#252525]">Compensation Package</h3>
-                                                    <p className="text-sm text-[#616161]">Total: {formatCurrency(
-                                                        updateForm.package.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0)
-                                                    )}</p>
+                                <CardContent className="p-6 overflow-y-auto max-h-[60vh]">
+                                    <form onSubmit={handleUpdateSubmit} className="space-y-6">
+                                        {activeSection === 'basic' && (
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                <div className="space-y-2">
+                                                    <Label htmlFor="name" className="text-sm font-semibold text-[#252525]">
+                                                        Company Name
+                                                    </Label>
+                                                    <Input
+                                                        id="name"
+                                                        value={updateForm.name}
+                                                        onChange={(e) => setUpdateForm(prev => ({ ...prev, name: e.target.value }))}
+                                                        className="h-11 border-[#e0e0e0] focus:border-[#9FE477]"
+                                                    />
                                                 </div>
-                                                <Button
-                                                    type="button"
-                                                    onClick={addPackageComponent}
-                                                    className="bg-[#9FE477] hover:bg-[#7AC142] text-[#252525]"
-                                                >
-                                                    <Plus className="w-4 h-4 mr-2" /> Add Component
-                                                </Button>
+                                                <div className="space-y-2">
+                                                    <Label htmlFor="year" className="text-sm font-semibold text-[#252525]">
+                                                        Academic Year
+                                                    </Label>
+                                                    <Input
+                                                        id="year"
+                                                        type="number"
+                                                        value={updateForm.year}
+                                                        onChange={(e) => setUpdateForm(prev => ({ ...prev, year: e.target.value }))}
+                                                        className="h-11 border-[#e0e0e0] focus:border-[#9FE477]"
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label htmlFor="eligibilityCgpa" className="text-sm font-semibold text-[#252525]">
+                                                        Minimum CGPA
+                                                    </Label>
+                                                    <Input
+                                                        id="eligibilityCgpa"
+                                                        type="number"
+                                                        step="0.1"
+                                                        value={updateForm.eligibilityCgpa}
+                                                        onChange={(e) => setUpdateForm(prev => ({ ...prev, eligibilityCgpa: e.target.value }))}
+                                                        className="h-11 border-[#e0e0e0] focus:border-[#9FE477]"
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label htmlFor="phone" className="text-sm font-semibold text-[#252525]">
+                                                        Contact Phone
+                                                    </Label>
+                                                    <Input
+                                                        id="phone"
+                                                        value={updateForm.phone}
+                                                        onChange={(e) => setUpdateForm(prev => ({ ...prev, phone: e.target.value }))}
+                                                        className="h-11 border-[#e0e0e0] focus:border-[#9FE477]"
+                                                    />
+                                                </div>
                                             </div>
+                                        )}
 
-                                            <div className="space-y-3">
-                                                {updateForm.package.map((pkg, index) => (
-                                                    <Card key={index} className="border border-[#e0e0e0] bg-[#FAFAFA]">
-                                                        <div
-                                                            className="p-4 cursor-pointer hover:bg-[#f5f5f5] transition-colors"
-                                                            onClick={() => togglePackageExpansion(index)}
-                                                        >
-                                                            <div className="flex items-center justify-between">
-                                                                <div className="flex items-center gap-3">
-                                                                    <DollarSign className="w-5 h-5 text-[#9FE477]" />
-                                                                    <div>
-                                                                        <p className="font-medium text-[#252525]">
-                                                                            {pkg.componentName || `Component ${index + 1}`}
-                                                                        </p>
-                                                                        <p className="text-sm text-[#616161]">
-                                                                            {formatCurrency(parseFloat(pkg.amount) || 0)}
-                                                                        </p>
+                                        {activeSection === 'schedule' && (
+                                            <div className="space-y-4">
+                                                <div className="flex items-center justify-between">
+                                                    <h3 className="text-lg font-semibold text-[#252525]">Event Schedule</h3>
+                                                    <Button
+                                                        type="button"
+                                                        onClick={addScheduleEvent}
+                                                        className="bg-[#9FE477] hover:bg-[#7AC142] text-[#252525]"
+                                                    >
+                                                        <Plus className="w-4 h-4 mr-2" /> Add Event
+                                                    </Button>
+                                                </div>
+
+                                                <div className="space-y-3">
+                                                    {updateForm.schedule.map((event, index) => (
+                                                        <Card key={index} className="border border-[#e0e0e0] bg-[#FAFAFA]">
+                                                            <div
+                                                                className="p-4 cursor-pointer hover:bg-[#f5f5f5] transition-colors"
+                                                                onClick={() => toggleScheduleExpansion(index)}
+                                                            >
+                                                                <div className="flex items-center justify-between">
+                                                                    <div className="flex items-center gap-3">
+                                                                        <Calendar className="w-5 h-5 text-[#9FE477]" />
+                                                                        <div>
+                                                                            <p className="font-medium text-[#252525]">
+                                                                                {event.eventName || `Event ${index + 1}`}
+                                                                            </p>
+                                                                            {event.date && (
+                                                                                <p className="text-sm text-[#616161]">
+                                                                                    {formatDate(event.date)}
+                                                                                </p>
+                                                                            )}
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="flex items-center gap-2">
+                                                                        <Button
+                                                                            type="button"
+                                                                            variant="ghost"
+                                                                            size="sm"
+                                                                            onClick={(e) => {
+                                                                                e.stopPropagation();
+                                                                                removeScheduleEvent(index);
+                                                                            }}
+                                                                            className="text-[#d32f2f] hover:text-[#b71c1c] hover:bg-[#ffebee]"
+                                                                        >
+                                                                            <Trash2 className="w-4 h-4" />
+                                                                        </Button>
+                                                                        {expandedSchedule.includes(index) ?
+                                                                            <ChevronUp className="w-5 h-5 text-[#616161]" /> :
+                                                                            <ChevronDown className="w-5 h-5 text-[#616161]" />
+                                                                        }
                                                                     </div>
                                                                 </div>
-                                                                <div className="flex items-center gap-2">
-                                                                    <Button
-                                                                        type="button"
-                                                                        variant="ghost"
-                                                                        size="sm"
-                                                                        onClick={(e) => {
-                                                                            e.stopPropagation();
-                                                                            removePackageComponent(index);
-                                                                        }}
-                                                                        className="text-[#d32f2f] hover:text-[#b71c1c] hover:bg-[#ffebee]"
-                                                                    >
-                                                                        <Trash2 className="w-4 h-4" />
-                                                                    </Button>
-                                                                    {expandedPackage.includes(index) ?
-                                                                        <ChevronUp className="w-5 h-5 text-[#616161]" /> :
-                                                                        <ChevronDown className="w-5 h-5 text-[#616161]" />
-                                                                    }
-                                                                </div>
                                                             </div>
-                                                        </div>
 
-                                                        {expandedPackage.includes(index) && (
-                                                            <div className="border-t border-[#e0e0e0] p-4 bg-[#f5f5f5] space-y-4">
-                                                                <div>
-                                                                    <Label className="text-sm font-medium text-[#252525]">Component Name</Label>
-                                                                    <Input
-                                                                        placeholder="e.g., Base Salary, Bonus, Stock Options"
-                                                                        value={pkg.componentName}
-                                                                        onChange={(e) => updatePackageComponent(index, "componentName", e.target.value)}
-                                                                        className="mt-1 border-[#e0e0e0] focus:border-[#9FE477]"
-                                                                    />
+                                                            {expandedSchedule.includes(index) && (
+                                                                <div className="border-t border-[#e0e0e0] p-4 bg-[#f5f5f5] space-y-4">
+                                                                    <div>
+                                                                        <Label className="text-sm font-medium text-[#252525]">Event Name</Label>
+                                                                        <Input
+                                                                            placeholder="e.g., Pre-placement Talk"
+                                                                            value={event.eventName}
+                                                                            onChange={(e) => updateScheduleEvent(index, "eventName", e.target.value)}
+                                                                            className="mt-1 border-[#e0e0e0] focus:border-[#9FE477]"
+                                                                        />
+                                                                    </div>
+                                                                    <div>
+                                                                        <Label className="text-sm font-medium text-[#252525]">Date & Time</Label>
+                                                                        <Input
+                                                                            type="datetime-local"
+                                                                            value={event.date}
+                                                                            onChange={(e) => updateScheduleEvent(index, "date", e.target.value)}
+                                                                            className="mt-1 border-[#e0e0e0] focus:border-[#9FE477]"
+                                                                        />
+                                                                    </div>
+                                                                    <div>
+                                                                        <Label className="text-sm font-medium text-[#252525]">Description</Label>
+                                                                        <Input
+                                                                            placeholder="Optional description"
+                                                                            value={event.description}
+                                                                            onChange={(e) => updateScheduleEvent(index, "description", e.target.value)}
+                                                                            className="mt-1 border-[#e0e0e0] focus:border-[#9FE477]"
+                                                                        />
+                                                                    </div>
                                                                 </div>
-                                                                <div>
-                                                                    <Label className="text-sm font-medium text-[#252525]">Amount (₹)</Label>
-                                                                    <Input
-                                                                        type="number"
-                                                                        placeholder="Amount in INR"
-                                                                        value={pkg.amount}
-                                                                        onChange={(e) => updatePackageComponent(index, "amount", e.target.value)}
-                                                                        className="mt-1 border-[#e0e0e0] focus:border-[#9FE477]"
-                                                                    />
-                                                                </div>
-                                                            </div>
-                                                        )}
-                                                    </Card>
-                                                ))}
+                                                            )}
+                                                        </Card>
+                                                    ))}
+                                                </div>
                                             </div>
-                                        </div>
-                                    )}
+                                        )}
 
-                                    {updateMessage.text && (
-                                        <div className={`p-3 rounded-lg flex items-center gap-2 ${updateMessage.isError
-                                            ? 'bg-[#ffebee] text-[#d32f2f] border-[#ffcdd2]'
-                                            : 'bg-[#e6f3e1] text-[#2f7d32] border-[#c8e6c9]'
-                                            }`}>
-                                            {updateMessage.isError ? (
-                                                <X className="w-4 h-4" />
-                                            ) : (
-                                                <Save className="w-4 h-4" />
-                                            )}
-                                            <span className="text-sm font-medium">{updateMessage.text}</span>
-                                        </div>
-                                    )}
+                                        {activeSection === 'package' && (
+                                            <div className="space-y-4">
+                                                <div className="flex items-center justify-between">
+                                                    <div>
+                                                        <h3 className="text-lg font-semibold text-[#252525]">Compensation Package</h3>
+                                                        <p className="text-sm text-[#616161]">Total: {formatCurrency(
+                                                            updateForm.package.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0)
+                                                        )}</p>
+                                                    </div>
+                                                    <Button
+                                                        type="button"
+                                                        onClick={addPackageComponent}
+                                                        className="bg-[#9FE477] hover:bg-[#7AC142] text-[#252525]"
+                                                    >
+                                                        <Plus className="w-4 h-4 mr-2" /> Add Component
+                                                    </Button>
+                                                </div>
 
-                                    <div className="flex justify-end gap-4 pt-4 border-t border-[#e0e0e0]">
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            onClick={() => {
-                                                setUpdateModalOpen(false);
-                                                setSelectedCompany(null);
-                                                setUpdateMessage({ text: "", isError: false });
-                                            }}
-                                            className="w-full md:w-auto border-[#e0e0e0] text-[#616161] hover:bg-[#f5f5f5]"
-                                        >
-                                            Cancel
-                                        </Button>
-                                        <Button
-                                            type="submit"
-                                            className="w-full md:w-auto bg-[#9FE477] hover:bg-[#7AC142] text-[#252525]"
-                                        >
-                                            <Save className="w-4 h-4 mr-2" />
-                                            Save Changes
-                                        </Button>
-                                    </div>
-                                </form>
-                            </CardContent>
-                        </Card>
+                                                <div className="space-y-3">
+                                                    {updateForm.package.map((pkg, index) => (
+                                                        <Card key={index} className="border border-[#e0e0e0] bg-[#FAFAFA]">
+                                                            <div
+                                                                className="p-4 cursor-pointer hover:bg-[#f5f5f5] transition-colors"
+                                                                onClick={() => togglePackageExpansion(index)}
+                                                            >
+                                                                <div className="flex items-center justify-between">
+                                                                    <div className="flex items-center gap-3">
+                                                                        <DollarSign className="w-5 h-5 text-[#9FE477]" />
+                                                                        <div>
+                                                                            <p className="font-medium text-[#252525]">
+                                                                                {pkg.componentName || `Component ${index + 1}`}
+                                                                            </p>
+                                                                            <p className="text-sm text-[#616161]">
+                                                                                {formatCurrency(parseFloat(pkg.amount) || 0)}
+                                                                            </p>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="flex items-center gap-2">
+                                                                        <Button
+                                                                            type="button"
+                                                                            variant="ghost"
+                                                                            size="sm"
+                                                                            onClick={(e) => {
+                                                                                e.stopPropagation();
+                                                                                removePackageComponent(index);
+                                                                            }}
+                                                                            className="text-[#d32f2f] hover:text-[#b71c1c] hover:bg-[#ffebee]"
+                                                                        >
+                                                                            <Trash2 className="w-4 h-4" />
+                                                                        </Button>
+                                                                        {expandedPackage.includes(index) ?
+                                                                            <ChevronUp className="w-5 h-5 text-[#616161]" /> :
+                                                                            <ChevronDown className="w-5 h-5 text-[#616161]" />
+                                                                        }
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+                                                            {expandedPackage.includes(index) && (
+                                                                <div className="border-t border-[#e0e0e0] p-4 bg-[#f5f5f5] space-y-4">
+                                                                    <div>
+                                                                        <Label className="text-sm font-medium text-[#252525]">Component Name</Label>
+                                                                        <Input
+                                                                            placeholder="e.g., Base Salary, Bonus, Stock Options"
+                                                                            value={pkg.componentName}
+                                                                            onChange={(e) => updatePackageComponent(index, "componentName", e.target.value)}
+                                                                            className="mt-1 border-[#e0e0e0] focus:border-[#9FE477]"
+                                                                        />
+                                                                    </div>
+                                                                    <div>
+                                                                        <Label className="text-sm font-medium text-[#252525]">Amount (₹)</Label>
+                                                                        <Input
+                                                                            type="number"
+                                                                            placeholder="Amount in INR"
+                                                                            value={pkg.amount}
+                                                                            onChange={(e) => updatePackageComponent(index, "amount", e.target.value)}
+                                                                            className="mt-1 border-[#e0e0e0] focus:border-[#9FE477]"
+                                                                        />
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                        </Card>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {updateMessage.text && (
+                                            <div className={`p-3 rounded-lg flex items-center gap-2 ${updateMessage.isError
+                                                ? 'bg-[#ffebee] text-[#d32f2f] border-[#ffcdd2]'
+                                                : 'bg-[#e6f3e1] text-[#2f7d32] border-[#c8e6c9]'
+                                                }`}>
+                                                {updateMessage.isError ? (
+                                                    <X className="w-4 h-4" />
+                                                ) : (
+                                                    <Save className="w-4 h-4" />
+                                                )}
+                                                <span className="text-sm font-medium">{updateMessage.text}</span>
+                                            </div>
+                                        )}
+
+                                        <div className="flex justify-end gap-4 pt-4 border-t border-[#e0e0e0]">
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                onClick={() => {
+                                                    setUpdateModalOpen(false);
+                                                    setSelectedCompany(null);
+                                                    setUpdateMessage({ text: "", isError: false });
+                                                }}
+                                                className="w-full md:w-auto border-[#e0e0e0] text-[#616161] hover:bg-[#f5f5f5]"
+                                            >
+                                                Cancel
+                                            </Button>
+                                            <Button
+                                                type="submit"
+                                                className="w-full md:w-auto bg-[#9FE477] hover:bg-[#7AC142] text-[#252525]"
+                                            >
+                                                <Save className="w-4 h-4 mr-2" />
+                                                Save Changes
+                                            </Button>
+                                        </div>
+                                    </form>
+                                </CardContent>
+                            </Card>
+                        </div>
                     </div>
                 )}
 
                 {/* Add Company Modal */}
                 {addModalOpen && (
-                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                        <Card className="bg-[#FAFAFA] border-0 w-full max-w-md p-6 rounded-2xl shadow-2xl">
-                            <CardHeader className="p-4 pb-3 bg-[#9FE477]/20">
-                                <CardTitle className="flex items-center gap-3 text-xl text-[#252525]">
-                                    <Plus className="w-5 h-5 text-[#9FE477]" />
-                                    Add New Company
-                                </CardTitle>
-                                <CardDescription className="text-[#616161]">
-                                    Upload a PDF with company details
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent className="p-4 space-y-6">
-                                <form onSubmit={handleAddSubmit} className="space-y-4">
-                                    <div>
-                                        <Label htmlFor="addFile" className="text-sm font-semibold text-[#252525]">
-                                            Company PDF
-                                        </Label>
-                                        <Input
-                                            id="addFile"
-                                            type="file"
-                                            accept="application/pdf"
-                                            onChange={(e) => setAddFile(e.target.files?.[0] || null)}
-                                            className="mt-1 h-11 border-[#e0e0e0] focus:border-[#9FE477]"
-                                        />
-                                    </div>
-                                    {addMessage.text && (
-                                        <div className={`p-2 rounded-lg flex items-center gap-2 ${addMessage.isError
-                                            ? 'bg-[#ffebee] text-[#d32f2f] border-[#ffcdd2]'
-                                            : 'bg-[#e6f3e1] text-[#2f7d32] border-[#c8e6c9]'
-                                            }`}>
-                                            {addMessage.isError ? (
-                                                <X className="w-4 h-4" />
-                                            ) : (
-                                                <Save className="w-4 h-4" />
-                                            )}
-                                            <span className="text-sm font-medium">{addMessage.text}</span>
+                    <div className="fixed inset-0 mt-0 z-50">
+                        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                            <Card className="bg-[#FAFAFA] border-0 w-full max-w-md p-6 rounded-2xl shadow-2xl">
+                                <CardHeader className="p-4 pb-3 bg-[#9FE477]/20">
+                                    <CardTitle className="flex items-center gap-3 text-xl text-[#252525]">
+                                        <Plus className="w-5 h-5 text-[#9FE477]" />
+                                        Add New Company
+                                    </CardTitle>
+                                    <CardDescription className="text-[#616161]">
+                                        Upload a PDF with company details
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent className="p-4 space-y-6">
+                                    <form onSubmit={handleAddSubmit} className="space-y-4">
+                                        <div>
+                                            <Label htmlFor="addFile" className="text-sm font-semibold text-[#252525]">
+                                                Company PDF
+                                            </Label>
+                                            <Input
+                                                id="addFile"
+                                                type="file"
+                                                accept="application/pdf"
+                                                onChange={(e) => setAddFile(e.target.files?.[0] || null)}
+                                                className="mt-1 h-11 border-[#e0e0e0] focus:border-[#9FE477]"
+                                            />
                                         </div>
-                                    )}
-                                    <div className="flex justify-end gap-4">
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            onClick={() => {
-                                                setAddModalOpen(false);
-                                                setAddFile(null);
-                                                setAddMessage({ text: "", isError: false });
-                                            }}
-                                            className="w-full md:w-auto border-[#e0e0e0] text-[#616161] hover:bg-[#f5f5f5]"
-                                        >
-                                            Cancel
-                                        </Button>
-                                        <Button
-                                            type="submit"
-                                            className="w-full md:w-auto bg-[#9FE477] hover:bg-[#7AC142] text-[#252525]"
-                                        >
-                                            <Save className="w-4 h-4 mr-2" />
-                                            Submit
-                                        </Button>
-                                    </div>
-                                </form>
-                            </CardContent>
-                        </Card>
+                                        {addMessage.text && (
+                                            <div className={`p-2 rounded-lg flex items-center gap-2 ${addMessage.isError
+                                                ? 'bg-[#ffebee] text-[#d32f2f] border-[#ffcdd2]'
+                                                : 'bg-[#e6f3e1] text-[#2f7d32] border-[#c8e6c9]'
+                                                }`}>
+                                                {addMessage.isError ? (
+                                                    <X className="w-4 h-4" />
+                                                ) : (
+                                                    <Save className="w-4 h-4" />
+                                                )}
+                                                <span className="text-sm font-medium">{addMessage.text}</span>
+                                            </div>
+                                        )}
+                                        <div className="flex justify-end gap-4">
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                onClick={() => {
+                                                    setAddModalOpen(false);
+                                                    setAddFile(null);
+                                                    setAddMessage({ text: "", isError: false });
+                                                }}
+                                                className="w-full md:w-auto border-[#e0e0e0] text-[#616161] hover:bg-[#f5f5f5]"
+                                            >
+                                                Cancel
+                                            </Button>
+                                            <Button
+                                                type="submit"
+                                                className="w-full md:w-auto bg-[#9FE477] hover:bg-[#7AC142] text-[#252525]"
+                                            >
+                                                <Save className="w-4 h-4 mr-2" />
+                                                Submit
+                                            </Button>
+                                        </div>
+                                    </form>
+                                </CardContent>
+                            </Card>
+                        </div>
                     </div>
                 )}
+
+                {/* Calendar Modal */}
+                {calendarModalOpen && (
+                    <div className="fixed inset-0 z-50">
+                        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-start justify-center p-7">
+                            <Card className="relative bg-[#FAFAFA] border-0 w-full max-w-7xl max-h-[90vh] overflow-y-auto p-5 rounded-2xl shadow-2xl overflow-hidden">
+
+                                <CardHeader className="p-3 pb-2 bg-[#9FE477]/20">
+                                    <CardTitle className="flex items-center gap-3 text-2xl text-[#252525]">
+                                        <Calendar className="w-6 h-6 text-[#9FE477]" />
+                                        Calendar Overview
+                                    </CardTitle>
+                                    <CardDescription className="text-[#616161]">
+                                        View scheduled company events for the next 4 weeks
+                                    </CardDescription>
+                                    <button
+                                        onClick={() => setCalendarModalOpen(false)}
+                                        className="absolute top-5 right-7 text-[#252525] hover:text-[#7dcf59] transition"
+                                    >
+                                        <X className="w-6 h-6" />
+                                    </button>
+                                </CardHeader>
+
+                                <CardContent className="p-4 space-y-0">
+                                    <div className="bg-transparent">
+                                        <div className="flex items-center justify-between mb-0">
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                onClick={handlePreviousWeek}
+                                                disabled={weekOffset === -maxOffset}
+                                                className="text-[#9FE477] hover:bg-[#9FE477]/10"
+                                            >
+                                                <ChevronLeft className="h-5 w-5" />
+                                            </Button>
+                                            <span className="text-base font-semibold text-[#252525]">{formatDateRange()}</span>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                onClick={handleNextWeek}
+                                                disabled={weekOffset === maxOffset}
+                                                className="text-[#9FE477] hover:bg-[#9FE477]/10"
+                                            >
+                                                <ChevronRight className="h-5 w-5" />
+                                            </Button>
+                                        </div>
+
+                                        <div className="grid grid-cols-7 text-center mb-2">
+                                            {days.map(day => (
+                                                <div key={day} className="font-bold text-[#616161]">{day.slice(0, 3)}</div>
+                                            ))}
+                                        </div>
+
+                                        <div className="grid grid-cols-7 grid-rows-4 gap-0">
+                                            {getFourWeeksDays(weekOffset).map((day, index) => (
+                                                <div
+                                                    key={index}
+                                                    className={`border p-2 h-28 overflow-y-auto rounded ${day.isPast ? 'bg-[#f5f5f5]' : 'bg-white'} ${day.hasEvents ? 'bg-[#e6f3e1]' : ''}`}
+                                                >
+                                                    <div className="text-sm text-[#757575] font-semibold">{day.date} {day.month}</div>
+                                                    {day.interviews.map((interview, i) => (
+                                                        <div key={i} className={`p-1 mt-1 text-xs rounded ${getStatusColor(interview.status)}`}>
+                                                            {interview.company} ({interview.round})
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
+                    </div>
+                )}
+
             </div>
-        </div>
+        </div >
     );
 };
 

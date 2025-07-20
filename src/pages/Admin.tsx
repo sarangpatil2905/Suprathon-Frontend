@@ -150,10 +150,10 @@ const Admin: React.FC = () => {
 
 
                 {/* Profile Card */}
-                <Card className="bg-white/40 border-border/80 shadow-[var(--shadow-card)]">
+                <Card className="bg-[#9FE477] border-border/80 shadow-[var(--shadow-card)]">
                     <CardContent className="p-6">
                         <div className="flex items-center gap-6">
-                            <div className="w-16 h-16 bg-gradient-to-br from-primary/10 to-primary/5 rounded-full flex items-center justify-center">
+                            <div className="w-16 h-16 bg-white/80 rounded-full flex items-center justify-center">
                                 <User className="w-8 h-8 text-primary" />
                             </div>
                             <div className="flex-1">
@@ -215,15 +215,15 @@ const Admin: React.FC = () => {
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                    <div className="p-4 bg-muted/30 rounded-lg border border-border/50">
+                                    <div className="p-4 bg-[#252525]/80 text-[#f3f3f3] rounded-lg border border-border/50">
                                         <h4 className="font-medium">Average CTC</h4>
                                         <p className="text-xl font-bold">₹{parseFloat(stats.averageCTC).toLocaleString()}</p>
                                     </div>
-                                    <div className="p-4 bg-muted/30 rounded-lg border border-border/50">
+                                    <div className="p-4 bg-[#252525]/80 text-[#f3f3f3] rounded-lg border border-border/50">
                                         <h4 className="font-medium">Highest CTC</h4>
                                         <p className="text-xl font-bold">₹{stats.highestCTC.toLocaleString()}</p>
                                     </div>
-                                    <div className="p-4 bg-muted/30 rounded-lg border border-border/50">
+                                    <div className="p-4 bg-[#252525]/80 text-[#f3f3f3] rounded-lg border border-border/50">
                                         <h4 className="font-medium">Lowest CTC</h4>
                                         <p className="text-xl font-bold">₹{stats.lowestCTC.toLocaleString()}</p>
                                     </div>
@@ -237,7 +237,7 @@ const Admin: React.FC = () => {
                         <Card className="bg-white/40 border-border/80 shadow-[var(--shadow-card)]">
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2 text-lg">
-                                    <TrendingUp className="w-5 h-5 text-primary" />
+                                    <TrendingUp className="w-5 h-5 text-primary " />
                                     Placements by Year
                                 </CardTitle>
                                 <CardDescription>Annual placement distribution</CardDescription>
@@ -251,7 +251,7 @@ const Admin: React.FC = () => {
                                         >
                                             <div className="flex items-center justify-between">
                                                 <h4 className="font-medium text-sm">{year}</h4>
-                                                <Badge variant="outline">
+                                                <Badge variant="outline" className="bg-[#252525]/80 text-[#f3f3f3]">
                                                     {count} placement{count !== 1 ? "s" : ""}
                                                 </Badge>
                                             </div>
@@ -276,7 +276,7 @@ const Admin: React.FC = () => {
                                 {Object.entries(stats.packageComponents).map(([component, data]) => (
                                     <div
                                         key={component}
-                                        className="p-4 bg-muted/20 rounded-lg border border-border/80"
+                                        className="p-4 bg-[#252525]/80 text-[#f3f3f3] rounded-lg border border-border/80"
                                     >
                                         <h4 className="font-medium capitalize">{component}</h4>
                                         <div className="grid grid-cols-2 gap-2 text-sm">
@@ -294,10 +294,10 @@ const Admin: React.FC = () => {
 
                     {/* Top Companies and Top CTC Offers */}
                     <div>
-                        <Card className="bg-white/20 border-0 shadow-[var(--shadow-card)]">
+                        <Card className="bg-white/20 border-border/80 shadow-[var(--shadow-card)]">
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2 text-lg">
-                                    <Building2 className="w-5 h-5 text-primary" />
+                                    <Building2 className="w-5 h-5 text-primary " />
                                     Top Companies
                                 </CardTitle>
                                 <CardDescription>Leading recruiters by placement count</CardDescription>
@@ -311,7 +311,7 @@ const Admin: React.FC = () => {
                                         >
                                             <div className="flex items-center justify-between">
                                                 <h4 className="font-medium text-sm">{company.name}</h4>
-                                                <Badge variant="outline">
+                                                <Badge variant="outline" className="bg-[#252525]/80 text-[#f3f3f3]">
                                                     {company.count} placement{company.count !== 1 ? "s" : ""}
                                                 </Badge>
                                             </div>
@@ -335,12 +335,12 @@ const Admin: React.FC = () => {
                                 {stats.topCTCOffers.map((offer) => (
                                     <div
                                         key={offer._id}
-                                        className="p-4 bg-muted/20 rounded-lg border border-border/50"
+                                        className="p-4 bg-[#252525]/80 text-[#f3f3f3] rounded-lg border border-border/50"
                                     >
                                         <div className="flex items-center justify-between mb-3">
                                             <div>
                                                 <h4 className="font-medium">{offer.companyName}</h4>
-                                                <p className="text-sm text-muted-foreground">
+                                                <p className="text-s text-[#f3f3f3]">
                                                     Student: {offer.studentName || "Anonymous"}
                                                 </p>
                                             </div>
@@ -350,7 +350,7 @@ const Admin: React.FC = () => {
                                             <h5 className="font-medium">Package Breakdown:</h5>
                                             <ul className="space-y-1">
                                                 {offer.package.map((pkg) => (
-                                                    <li key={pkg._id} className="text-muted-foreground">
+                                                    <li key={pkg._id} className="text-[#f3f3f3]">
                                                         <span className="capitalize">{pkg.componentName}</span>: ₹
                                                         {pkg.amount.toLocaleString()}
                                                     </li>
