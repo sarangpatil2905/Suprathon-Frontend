@@ -11,6 +11,7 @@ import {
     DialogFooter,
 } from "@/components/ui/dialog";
 import { Building2, Calendar, DollarSign, GraduationCap } from "lucide-react";
+import { BASE_URL } from "@/assets/constants";
 
 interface PackageComponent {
     componentName: string;
@@ -46,12 +47,12 @@ const ApplyJobs = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const companiesResponse = await axios.get("http://localhost:8000/company/getAllCompanies", {
+                const companiesResponse = await axios.get(`${BASE_URL}/company/getAllCompanies`, {
                     withCredentials: true,
                 });
                 let fetchedCompanies = companiesResponse.data.data.companies || [];
 
-                const applicationsResponse = await axios.get("http://localhost:8000/application/getAllApplicationsByUser", {
+                const applicationsResponse = await axios.get(`${BASE_URL}/application/getAllApplicationsByUser`, {
                     withCredentials: true,
                 });
                 const fetchedApplications = applicationsResponse.data.applications || [];
@@ -90,7 +91,7 @@ const ApplyJobs = () => {
 
         try {
             const response = await axios.post(
-                `http://localhost:8000/application/apply/${selectedCompany._id}`,
+                `${BASE_URL}/application/apply/${selectedCompany._id}`,
                 {},
                 { withCredentials: true }
             );

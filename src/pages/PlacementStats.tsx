@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { BASE_URL } from "@/assets/constants";
 import {
     BarChart,
     Bar,
@@ -80,7 +81,7 @@ const PlacementStats: React.FC = () => {
 
     const fetchStats = async () => {
         try {
-            const res = await axios.get("http://localhost:8000/placement/stats", {
+            const res = await axios.get(`${BASE_URL}/placement/stats`, {
                 withCredentials: true,
             });
             setStats(res.data.stats);

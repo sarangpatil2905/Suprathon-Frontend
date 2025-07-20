@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Header from "@/components/Header";
+import { BASE_URL } from "@/assets/constants";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
     Select,
@@ -106,7 +107,7 @@ const SignupForm = () => {
                 }
 
                 try {
-                    const response = await axios.post("http://localhost:8000/user/signup", formDataToSend, {
+                    const response = await axios.post(`${BASE_URL}/user/signup`, formDataToSend, {
                         headers: { "Content-Type": "multipart/form-data" },
                         withCredentials: true,
                     });

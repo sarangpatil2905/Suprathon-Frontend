@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { useUser } from "../context/UserContext";
 import AdminNavbar from "@/components/AdminNavbar";
 import axios from "axios";
+import { BASE_URL } from "@/assets/constants";
 import {
     User,
     Building2,
@@ -66,7 +67,7 @@ const Admin: React.FC = () => {
 
     const fetchStats = async () => {
         try {
-            const response = await axios.get("http://localhost:8000/placement/stats", {
+            const response = await axios.get(`${BASE_URL}/placement/stats`, {
                 withCredentials: true,
             });
             setStats(response.data.stats);

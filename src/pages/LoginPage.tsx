@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import axios from "axios";
 import { useUser } from "../context/UserContext"; // adjust path if needed
+import { BASE_URL } from "@/assets/constants";
 
 const LoginPage = () => {
     const [userType, setUserType] = useState<"student" | "tpo">("student");
@@ -21,7 +22,7 @@ const LoginPage = () => {
 
         try {
             const res = await axios.post(
-                "http://localhost:8000/user/login",
+                `${BASE_URL}/user/login`,
                 {
                     email,
                     password,

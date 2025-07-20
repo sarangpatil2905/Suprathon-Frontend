@@ -7,6 +7,7 @@ import { Check, X, Loader2, Search, Mail, GraduationCap } from "lucide-react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import AdminNavbar from "@/components/AdminNavbar";
+import { BASE_URL } from "@/assets/constants";
 
 interface Student {
     _id: string;
@@ -38,7 +39,7 @@ const AcceptAdmin = () => {
         setLoading(true);
         setError(null);
         try {
-            const response = await axios.get(`http://localhost:8000/application/getAllApplicationsByCompany/${companyId}`, {
+            const response = await axios.get(`${BASE_URL}/application/getAllApplicationsByCompany/${companyId}`, {
                 withCredentials: true,
             });
             setStudents(response.data.applications || []);
@@ -77,7 +78,7 @@ const AcceptAdmin = () => {
         try {
             console.log("Submitting:", { acceptedStudents: Array.from(selectedStudents) });
             await axios.patch(
-                `http://localhost:8000/application/accept/${companyId}`,
+                `${BASE_URL}/application/accept/${companyId}`,
                 { acceptedStudents: Array.from(selectedStudents) },
                 { withCredentials: true }
             );

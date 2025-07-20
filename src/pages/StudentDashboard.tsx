@@ -23,6 +23,7 @@ import { useEffect, useState } from "react";
 import React from 'react';
 import { useUser } from "../context/UserContext";
 import axios from "axios";
+import { BASE_URL } from "@/assets/constants";
 
 interface StudentData {
     name: string;
@@ -78,7 +79,7 @@ const StudentDashboard = () => {
 
     const fetchMySkills = async () => {
         try {
-            const response = await axios.get('http://localhost:8000/user/getUserSkills', { withCredentials: true });
+            const response = await axios.get(`${BASE_URL}/user/getUserSkills`, { withCredentials: true });
             setSkills(response.data.data.technicalSkills);
         } catch (err) {
             console.log(err.message);
@@ -87,7 +88,7 @@ const StudentDashboard = () => {
 
     const fetchMyApplications = async () => {
         try {
-            const response = await axios.get('http://localhost:8000/application/getAllApplicationsByUser', { withCredentials: true });
+            const response = await axios.get(`${BASE_URL}/application/getAllApplicationsByUser`, { withCredentials: true });
             setMyApplications(response.data.applications || []);
         } catch (err) {
             console.log(err.message);
@@ -96,7 +97,7 @@ const StudentDashboard = () => {
 
     const fetchCompanies = async () => {
         try {
-            const response = await axios.get('http://localhost:8000/company/getAllCompanies', { withCredentials: true });
+            const response = await axios.get(`${BASE_URL}/company/getAllCompanies`, { withCredentials: true });
             setCompanies(response.data.data.companies);
         } catch (err) {
             console.log(err.message);

@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { BASE_URL } from "@/assets/constants";
 
 interface ScheduleEvent {
     _id?: string;
@@ -101,7 +102,7 @@ const AdminCompanies = () => {
         setLoading(true);
         setError(null);
         try {
-            const response = await axios.get("http://localhost:8000/company/getAllCompanies", {
+            const response = await axios.get(`${BASE_URL}/company/getAllCompanies`, {
                 withCredentials: true,
             });
             const companies = response.data.data.companies || [];
@@ -189,7 +190,7 @@ const AdminCompanies = () => {
                 })),
             };
             const response = await axios.patch(
-                `http://localhost:8000/company/update-company/${selectedCompany._id}`,
+                `${BASE_URL}/company/update-company/${selectedCompany._id}`,
                 updates,
                 { withCredentials: true }
             );
@@ -221,7 +222,7 @@ const AdminCompanies = () => {
 
         try {
             const response = await axios.post(
-                "http://localhost:8000/company/add-company",
+                `${BASE_URL}/company/add-company`,
                 formData,
                 {
                     withCredentials: true,
